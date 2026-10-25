@@ -6,6 +6,10 @@ authors = ["any2epub-rs Contributors"]
 description = "Conversor Universal Multi-Engine (PDF, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para W3C EPUB 3.3 com Extração Profunda na Raiz"
 license = "MIT OR Apache-2.0"
 
+[lib]
+name = "any2epub_rs"
+path = "src/lib.rs"
+
 [[bin]]
 name = "pdf2epub"
 path = "src/main.rs"
@@ -23,3 +27,9 @@ syntect = "5.2"
 url = "2.5"
 uuid = { version = "1.11", features = ["v4"] }
 zip = { version = "2.2", default-features = false, features = ["deflate"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true

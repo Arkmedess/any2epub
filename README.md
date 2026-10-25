@@ -1,6 +1,54 @@
 # `any2epub-rs` v0.9.0 — Conversor Universal Multi-Engine com Extração Profunda na Raiz (PDF, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para EPUB 3.3
 
-Conversor nativo de alta performance escrito em [**Rust (Edição 2024)**](https://doc.rust-lang.org/edition-guide/rust-2024/index.html) para transformar livros em PDF (com decodificação de fontes CID sem `/ToUnicode` e extração de figuras) e portais/documentações técnicas na Web ([**mdBook**](https://rust-lang.github.io/mdBook/), [**MediaWiki**](https://www.mediawiki.org/wiki/MediaWiki), [**MDN Yari Engine**](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide), [**Pro Git AsciiDoc**](https://git-scm.com/book/en/v2), [**Sphinx Python Docs**](https://docs.python.org/3/tutorial/index.html) e [**Effective Go Spec**](https://go.dev/doc/effective_go)) em e-books [**EPUB 3.3 (W3C)**](https://www.w3.org/TR/epub-33/) com extração exaustiva na raiz do DOM (`2.120` a `3.937` parágrafos por livro, `2,52 MB` a `6,37 MB`) e árvore hierárquica profunda de subtópicos (`H1 -> H2 -> H3 -> H4`, ex: `4.1.1`, `4.9.3.1`, `10.2.1`) no sumário (`nav.xhtml`) e no corpo XHTML.
+Conversor nativo de alta performance escrito em **Rust** para transformar livros em PDF (com decodificação de fontes CID sem `/ToUnicode` e extração de figuras) e portais/documentações técnicas na Web ([**mdBook**](https://rust-lang.github.io/mdBook/), [**MediaWiki**](https://www.mediawiki.org/wiki/MediaWiki), [**MDN Yari Engine**](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide), [**Pro Git AsciiDoc**](https://git-scm.com/book/en/v2), [**Sphinx Python Docs**](https://docs.python.org/3/tutorial/index.html) e [**Effective Go Spec**](https://go.dev/doc/effective_go)) em e-books [**EPUB 3.3 (W3C)**](https://www.w3.org/TR/epub-33/) com extração exaustiva na raiz do DOM (`2.120` a `3.937` parágrafos por livro, `2,52 MB` a `6,37 MB`) e árvore hierárquica profunda de subtópicos (`H1 -> H2 -> H3 -> H4`, ex: `4.1.1`, `4.9.3.1`, `10.2.1`) no sumário (`nav.xhtml`) e no corpo XHTML.
+
+## Arquitetura Modular em Estágios (Pipeline Architecture)
+
+```text
+any2epub/
+├── Cargo.toml                              # Manifesto oficial da biblioteca e binário CLI
+├── CHANGELOG.md                            # Histórico de versões SemVer
+├── README.md                               # Visão executiva e guia rápido
+├── docs/
+│   ├── plano_expansao_funcionalidades_epub.md
+│   └── plano_orquestracao_pdf2epub.md
+├── src/
+│   ├── lib.rs                              # Fachada pública da biblioteca (any2epub_rs)
+│   ├── main.rs                             # Ponto de entrada CLI (pdf2epub)
+│   ├── cli/
+│   │   ├── mod.rs
+│   │   └── args.rs                         # CliArgs, SourceKind e detecção automática
+│   ├── domain/
+│   │   ├── mod.rs
+│   │   ├── metadata.rs                     # BookMetadata e ExtractedFigure
+│   │   ├── ir.rs                           # Representação Intermediária (Chapter, ChapterElement, TocNode)
+│   │   └── traits.rs                       # Contrato polimórfico ContentSourceExtractor
+│   ├── extractors/
+│   │   ├── mod.rs                          # Fábrica polimórfica de extratores
+│   │   ├── web.rs                          # WebSiteExtractor (mdBook, Sphinx, AsciiDoc, MDN, WebArticle)
+│   │   ├── mediawiki.rs                    # MediaWikiExtractor (ArchWiki e MediaWiki em grafo BFS)
+│   │   ├── spec.rs                         # SinglePageSpecExtractor (Effective Go Spec)
+│   │   └── pdf/
+│   │       ├── mod.rs                      # PdfExtractor implementando ContentSourceExtractor
+│   │       ├── pipeline.rs                 # PdfProsePipeline, moda estatística, drop caps e footnotes
+│   │       ├── cmap.rs                     # repair_broken_cmap_cid (Calibri e Lekton)
+│   │       └── native.rs                   # Integração pdfium-render e extração de figuras/capa
+│   ├── epub/
+│   │   ├── mod.rs                          # NativeEpub3Builder (empacotamento ZIP OCF)
+│   │   ├── container.rs                    # META-INF/container.xml
+│   │   ├── opf.rs                          # OEBPS/content.opf (Dublin Core, manifest e spine)
+│   │   ├── nav.rs                          # OEBPS/nav.xhtml (sumário hierárquico recursivo)
+│   │   ├── xhtml.rs                        # Serialização XHTML5 de capítulos, capa e sinopse
+│   │   └── css.rs                          # Folha de estilos editorial W3C EPUB 3.3
+│   └── utils/
+│       ├── mod.rs
+│       ├── text.rs                         # Sanitização XML/XHTML5 e slugify_anchor_id
+│       └── regexes.rs                      # Expressões regulares DFA compiladas (OnceLock)
+└── tests/
+    ├── epub_pipeline_test.rs               # Testes do pipeline PDF, CMap e empacotamento EPUB 3.3
+    ├── url_resolution_test.rs              # Testes de resolução RFC 3986 e SourceKind
+    └── web_extraction_test.rs              # Testes de extração DOM (mdBook, MediaWiki, SinglePageSpec)
+```
 
 ## Destaques Arquiteturais da Versão `v0.9.0`
 
