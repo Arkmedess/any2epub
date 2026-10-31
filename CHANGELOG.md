@@ -5,6 +5,15 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [Unreleased]
+
+### Adicionado
+- Interface gráfica desktop nativa do visualizador de leitura (`run_gui_viewer` via feature `gui` e `minifb`):
+  - Janela desktop nativa interativa (800x1050) com taxa de atualização de 60 FPS e baixo consumo de recursos.
+  - Conversão de `PageBitmap` RGBA8888 para framebuffer nativo ARGB `u32` via `to_argb_u32`.
+  - Navegação de leitura por teclado (setas, espaço, PageDown/PageUp), alternância de motor (`m`), temas (`t`), zoom de fonte (`+`/`-`) e saída (`q`/`Esc`).
+  - Flag `--gui` / `-g` no subcomando `view` e como flag pós-conversão no `any2epub`.
+
 ## [0.10.0] - 2026-10-30
 
 ### Adicionado

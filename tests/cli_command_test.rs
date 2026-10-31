@@ -64,10 +64,10 @@ fn test_cli_handle_validate_and_view_commands() {
     assert!(handle_validate_command(&epub_path, true).is_ok());
 
     // 3. Testa visualização no motor nativo Rust
-    assert!(handle_view_command(&epub_path, "native", "sepia", 0, false).is_ok());
+    assert!(handle_view_command(&epub_path, "native", "sepia", 0, false, false).is_ok());
 
     // 4. Testa visualização no motor KOReader crengine
-    assert!(handle_view_command(&epub_path, "koreader", "night", 0, false).is_ok());
+    assert!(handle_view_command(&epub_path, "koreader", "night", 0, false, false).is_ok());
 
     let _ = std::fs::remove_file(&epub_path);
 }

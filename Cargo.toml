@@ -31,6 +31,11 @@ syntect = "5.2"
 url = "2.5"
 uuid = { version = "1.11", features = ["v4"] }
 zip = { version = "2.2", default-features = false, features = ["deflate"] }
+minifb = { version = "0.27", optional = true }
+
+[features]
+default = []
+gui = ["dep:minifb"]
 
 [profile.release]
 opt-level = 3

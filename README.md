@@ -106,7 +106,10 @@ cargo test
 # 3. Abrir o leitor interativo estilo KOReader no terminal
 ./target/release/any2epub view "meu_livro.epub" -i
 
-# 4. Inspecionar página específica com o motor KOReader ou Rust Nativo
+# 4. Abrir a janela desktop nativa do visualizador de leitura
+./target/release/any2epub view "meu_livro.epub" --gui
+
+# 5. Inspecionar página específica com o motor KOReader ou Rust Nativo
 ./target/release/any2epub view "meu_livro.epub" --backend koreader --theme sepia --page 0
 ./target/release/any2epub view "meu_livro.epub" --backend native --theme night --page 2
 ```

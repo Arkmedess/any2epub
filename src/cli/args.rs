@@ -92,6 +92,9 @@ pub enum CliCommand {
         /// Inicia a sessão de leitura interativa estilo KOReader no terminal.
         #[arg(short, long)]
         interactive: bool,
+        /// Abre a janela desktop nativa do visualizador de EPUB.
+        #[arg(short, long)]
+        gui: bool,
     },
 }
 
@@ -122,6 +125,10 @@ pub struct CliArgs {
     /// Abre o visualizador de leitura imediatamente após a conversão.
     #[arg(long)]
     pub view: bool,
+
+    /// Abre a janela desktop nativa do visualizador de leitura imediatamente após a conversão.
+    #[arg(short, long)]
+    pub gui: bool,
 
     /// Emite relatórios ou dados em formato JSON estruturado (ideal para CI/automações).
     #[arg(long)]

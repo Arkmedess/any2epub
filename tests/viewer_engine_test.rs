@@ -97,6 +97,9 @@ fn test_native_rust_reader_engine_lifecycle() {
     assert_eq!(bitmap.height, 1200);
     assert_eq!(bitmap.rgba_pixels.len(), 800 * 1200 * 4);
 
+    let argb = bitmap.to_argb_u32();
+    assert_eq!(argb.len(), 800 * 1200);
+
     let _ = std::fs::remove_file(&epub_path);
 }
 

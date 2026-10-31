@@ -2,6 +2,7 @@
 
 pub mod bitmap;
 pub mod engine;
+pub mod gui;
 pub mod interactive;
 pub mod koreader;
 pub mod native;
@@ -11,6 +12,7 @@ pub use bitmap::PageBitmap;
 pub use engine::{
     create_reader_engine, BookDetails, ReaderEngine, ViewerBackendKind, ViewerError,
 };
+pub use gui::run_gui_viewer;
 pub use interactive::run_interactive_viewer;
 pub use koreader::KoreaderCrengineEngine;
 pub use native::NativeRustReaderEngine;

@@ -8,8 +8,8 @@ use crate::epub::validator::{NativeEpubValidator, ValidationReport};
 use crate::epub::NativeEpub3Builder;
 use crate::extractors::build_extractor;
 use crate::viewer::{
-    create_reader_engine, run_interactive_viewer, ViewerBackendKind, ViewerColorTheme,
-    ViewerRenderOptions,
+    create_reader_engine, run_gui_viewer, run_interactive_viewer, ViewerBackendKind,
+    ViewerColorTheme, ViewerRenderOptions,
 };
 
 /// Emite o relatório de validação W3C EPUB 3.3 para stdout (formato legível ou JSON).
@@ -85,6 +85,7 @@ pub fn handle_view_command(
     theme_str: &str,
     page: usize,
     interactive: bool,
+    gui: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let backend = match backend_str.to_lowercase().as_str() {
         "koreader" | "crengine" | "koreader-crengine" => ViewerBackendKind::KoreaderCrengine,
@@ -97,6 +98,10 @@ pub fn handle_view_command(
         "e-ink" | "eink" | "e-ink-mono" => ViewerColorTheme::EInkMono,
         _ => ViewerColorTheme::Sepia,
     };
+
+    if gui {
+        return run_gui_viewer(path, backend, theme);
+    }
 
     if interactive {
         return run_interactive_viewer(path, backend, theme);
@@ -155,9 +160,10 @@ pub fn run_cli(args: CliArgs) -> Result<(), Box<dyn std::error::Error>> {
         theme,
         page,
         interactive,
+        gui,
     }) = &args.command
     {
-        return handle_view_command(path, backend, theme, *page, *interactive);
+        return handle_view_command(path, backend, theme, *page, *interactive, *gui);
     }
 
     let input_path = match &args.input {
@@ -233,8 +239,10 @@ pub fn run_cli(args: CliArgs) -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    if args.view {
-        handle_view_command(&args.output, "native", "sepia", 0, false)?;
+    if args.gui {
+        handle_view_command(&args.output, "native", "sepia", 0, false, true)?;
+    } else if args.view {
+        handle_view_command(&args.output, "native", "sepia", 0, false, false)?;
     }
 
     Ok(())
