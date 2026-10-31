@@ -1,4 +1,4 @@
-# `any2epub-rs` v0.9.0 — Conversor Universal Multi-Engine com Extração Profunda na Raiz (PDF, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para EPUB 3.3
+# `any2epub-rs` v0.10.0 — Conversor Universal Multi-Engine com Extração Profunda na Raiz (PDF, Markdown, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para EPUB 3.3 com Visualizador KOReader/Rust Integrado
 
 Conversor nativo de alta performance escrito em **Rust** para transformar livros em PDF (com decodificação de fontes CID sem `/ToUnicode` e extração de figuras) e portais/documentações técnicas na Web ([**mdBook**](https://rust-lang.github.io/mdBook/), [**MediaWiki**](https://www.mediawiki.org/wiki/MediaWiki), [**MDN Yari Engine**](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide), [**Pro Git AsciiDoc**](https://git-scm.com/book/en/v2), [**Sphinx Python Docs**](https://docs.python.org/3/tutorial/index.html) e [**Effective Go Spec**](https://go.dev/doc/effective_go)) em e-books [**EPUB 3.3 (W3C)**](https://www.w3.org/TR/epub-33/) com extração exaustiva na raiz do DOM (`2.120` a `3.937` parágrafos por livro, `2,52 MB` a `6,37 MB`) e árvore hierárquica profunda de subtópicos (`H1 -> H2 -> H3 -> H4`, ex: `4.1.1`, `4.9.3.1`, `10.2.1`) no sumário (`nav.xhtml`) e no corpo XHTML.
 
@@ -14,10 +14,12 @@ any2epub/
 │   └── plano_orquestracao_pdf2epub.md
 ├── src/
 │   ├── lib.rs                              # Fachada pública da biblioteca (any2epub_rs)
-│   ├── main.rs                             # Ponto de entrada CLI (pdf2epub)
+│   ├── main.rs                             # Ponto de entrada CLI (any2epub)
+│   ├── bin/pdf2epub.rs                     # Ponto de entrada CLI legado/alias (pdf2epub)
 │   ├── cli/
 │   │   ├── mod.rs
-│   │   └── args.rs                         # CliArgs, SourceKind e detecção automática
+│   │   ├── args.rs                         # CliArgs, CliCommand, SourceKind
+│   │   └── runner.rs                       # Orquestrador de comandos da CLI e relatórios
 │   ├── domain/
 │   │   ├── mod.rs
 │   │   ├── metadata.rs                     # BookMetadata e ExtractedFigure
@@ -25,6 +27,7 @@ any2epub/
 │   │   └── traits.rs                       # Contrato polimórfico ContentSourceExtractor
 │   ├── extractors/
 │   │   ├── mod.rs                          # Fábrica polimórfica de extratores
+│   │   ├── markdown.rs                     # LocalMarkdownExtractor (arquivos .md e diretórios)
 │   │   ├── web.rs                          # WebSiteExtractor (mdBook, Sphinx, AsciiDoc, MDN, WebArticle)
 │   │   ├── mediawiki.rs                    # MediaWikiExtractor (ArchWiki e MediaWiki em grafo BFS)
 │   │   ├── spec.rs                         # SinglePageSpecExtractor (Effective Go Spec)
@@ -34,18 +37,31 @@ any2epub/
 │   │       ├── cmap.rs                     # repair_broken_cmap_cid (Calibri e Lekton)
 │   │       └── native.rs                   # Integração pdfium-render e extração de figuras/capa
 │   ├── epub/
-│   │   ├── mod.rs                          # NativeEpub3Builder (empacotamento ZIP OCF)
+│   │   ├── mod.rs                          # NativeEpub3Builder e NativeEpubValidator
+│   │   ├── validator.rs                    # Validação estrutural canônica W3C EPUB 3.3
 │   │   ├── container.rs                    # META-INF/container.xml
 │   │   ├── opf.rs                          # OEBPS/content.opf (Dublin Core, manifest e spine)
 │   │   ├── nav.rs                          # OEBPS/nav.xhtml (sumário hierárquico recursivo)
 │   │   ├── xhtml.rs                        # Serialização XHTML5 de capítulos, capa e sinopse
 │   │   └── css.rs                          # Folha de estilos editorial W3C EPUB 3.3
+│   ├── viewer/                             # Motor de Leitura Multi-Engine estilo KOReader
+│   │   ├── mod.rs                          # Fachada pública do módulo viewer
+│   │   ├── engine.rs                       # Trait ReaderEngine e fábrica de backends
+│   │   ├── options.rs                      # ViewerRenderOptions e ViewerColorTheme
+│   │   ├── bitmap.rs                       # PageBitmap (RGBA8888)
+│   │   ├── interactive.rs                  # Sessão de leitura interativa no terminal
+│   │   ├── native.rs                       # NativeRustReaderEngine (Rust puro)
+│   │   └── koreader/                       # KoreaderCrengineEngine (FFI crengine)
 │   └── utils/
 │       ├── mod.rs
 │       ├── text.rs                         # Sanitização XML/XHTML5 e slugify_anchor_id
 │       └── regexes.rs                      # Expressões regulares DFA compiladas (OnceLock)
 └── tests/
+    ├── cli_command_test.rs                 # Testes dos comandos validate e view
     ├── epub_pipeline_test.rs               # Testes do pipeline PDF, CMap e empacotamento EPUB 3.3
+    ├── epub_validation_test.rs             # Testes do validador estrutural W3C EPUB 3.3
+    ├── interactive_viewer_test.rs          # Testes do leitor interativo e alternância de motor
+    ├── markdown_extraction_test.rs         # Testes de extração Markdown e geração EPUB
     ├── url_resolution_test.rs              # Testes de resolução RFC 3986 e SourceKind
     └── web_extraction_test.rs              # Testes de extração DOM (mdBook, MediaWiki, SinglePageSpec)
 ```
@@ -76,4 +92,21 @@ any2epub/
 ```bash
 cargo build --release
 cargo test
+```
+
+## Guia Rápido de Uso da CLI (`any2epub`)
+
+```bash
+# 1. Converter Markdown local para EPUB 3.3 com validação imediata
+./target/release/any2epub -i "docs/guia.md" -o "guia.epub" --validate
+
+# 2. Validar a conformidade estrutural W3C de qualquer arquivo EPUB
+./target/release/any2epub validate "meu_livro.epub"
+
+# 3. Abrir o leitor interativo estilo KOReader no terminal
+./target/release/any2epub view "meu_livro.epub" -i
+
+# 4. Inspecionar página específica com o motor KOReader ou Rust Nativo
+./target/release/any2epub view "meu_livro.epub" --backend koreader --theme sepia --page 0
+./target/release/any2epub view "meu_livro.epub" --backend native --theme night --page 2
 ```

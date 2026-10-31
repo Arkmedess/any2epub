@@ -1,6 +1,6 @@
 [package]
 name = "any2epub-rs"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2021"
 authors = ["any2epub-rs Contributors"]
 description = "Conversor Universal Multi-Engine (PDF, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para W3C EPUB 3.3 com Extração Profunda na Raiz"
@@ -11,8 +11,12 @@ name = "any2epub_rs"
 path = "src/lib.rs"
 
 [[bin]]
-name = "pdf2epub"
+name = "any2epub"
 path = "src/main.rs"
+
+[[bin]]
+name = "pdf2epub"
+path = "src/bin/pdf2epub.rs"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }

@@ -4,6 +4,7 @@ pub mod container;
 pub mod css;
 pub mod nav;
 pub mod opf;
+pub mod validator;
 pub mod xhtml;
 
 use std::fs::File;

@@ -1,4 +1,4 @@
-//! # `any2epub-rs` (`v0.9.0`) — Motor Autoral Multi-Fonte para W3C EPUB 3.3
+//! # `any2epub-rs` (`v0.10.0`) — Motor Autoral Multi-Fonte para W3C EPUB 3.3
 //!
 //! Biblioteca e pipeline modular em Rust projetado para converter:
 //! 1. **Livros em PDF de centenas de páginas** (com reparo de CMap CID, capa e figuras),
@@ -13,16 +13,19 @@ pub mod domain;
 pub mod epub;
 pub mod extractors;
 pub mod utils;
+pub mod viewer;
 
-pub use cli::{CliArgs, SourceKind};
+pub use cli::{CliArgs, CliCommand, SourceKind};
 pub use domain::{
     insert_subtopic_node, BookMetadata, CalloutKind, Chapter, ChapterElement,
     ContentSourceExtractor, ExtractedBookPayload, ExtractedFigure, FootnoteEntry, PdfWordBox,
     RawPdfPage, ReconstructedLine, TocNode,
 };
+pub use epub::validator::{NativeEpubValidator, ValidationReport};
 pub use epub::NativeEpub3Builder;
 pub use extractors::{
     build_extractor, extract_pdf_with_cover_and_figures, repair_broken_cmap_cid,
-    MediaWikiExtractor, PdfExtractor, PdfProsePipeline, SinglePageSpecExtractor, WebSiteExtractor,
+    LocalMarkdownExtractor, MediaWikiExtractor, PdfExtractor, PdfProsePipeline,
+    SinglePageSpecExtractor, WebSiteExtractor,
 };
 pub use utils::{escape_xhtml_fast, normalize_whitespace, slugify_anchor_id, strip_leading_tags};

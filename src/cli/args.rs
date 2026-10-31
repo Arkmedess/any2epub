@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use clap::{Parser, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum};
 use uuid::Uuid;
 
 use crate::domain::metadata::BookMetadata;
@@ -28,6 +28,8 @@ pub enum SourceKind {
     MdnGuide,
     /// Portal ou Wiki em Grafo MediaWiki (ex: `https://wiki.archlinux.org/title/Main_page`).
     MediaWiki,
+    /// Arquivo ou diretório contendo documentos Markdown locais (`.md`, `.markdown`).
+    Markdown,
 }
 
 impl SourceKind {
@@ -37,6 +39,9 @@ impl SourceKind {
             Self::Auto => {
                 let is_web_url = input.starts_with("http://") || input.starts_with("https://");
                 if !is_web_url {
+                    if input.ends_with(".md") || input.ends_with(".markdown") {
+                        return Self::Markdown;
+                    }
                     return Self::Pdf;
                 }
                 if input.contains("wiki.") || input.contains("/title/") {
@@ -60,21 +65,71 @@ impl SourceKind {
     }
 }
 
-/// Argumentos de linha de comando (CLI) do conversor `pdf2epub` (`any2epub-rs`).
+/// Subcomandos opcionais suportados pelo CLI `any2epub`.
+#[derive(Subcommand, Debug, Clone)]
+pub enum CliCommand {
+    /// Valida estruturalmente um pacote EPUB existente contra a especificação W3C EPUB 3.3.
+    Validate {
+        /// Caminho do arquivo EPUB a validar.
+        path: PathBuf,
+        /// Emite resultado em formato JSON estruturado.
+        #[arg(long)]
+        json: bool,
+    },
+    /// Visualiza e inspeciona interativamente as páginas paginadas de um arquivo EPUB.
+    View {
+        /// Caminho do arquivo EPUB a visualizar.
+        path: PathBuf,
+        /// Backend de renderização (`native` ou `koreader`).
+        #[arg(long, default_value = "native")]
+        backend: String,
+        /// Tema cromático inicial (`paper-white`, `sepia`, `night`, `e-ink-mono`).
+        #[arg(long, default_value = "sepia")]
+        theme: String,
+        /// Página inicial (base 0).
+        #[arg(short, long, default_value_t = 0)]
+        page: usize,
+        /// Inicia a sessão de leitura interativa estilo KOReader no terminal.
+        #[arg(short, long)]
+        interactive: bool,
+    },
+}
+
+/// Argumentos de linha de comando (CLI) do conversor `any2epub` (`any2epub-rs`).
 #[derive(Parser, Debug, Clone)]
 #[command(
-    name = "pdf2epub",
-    version = "0.9.0",
-    about = "Conversor autoral multi-fonte (PDF, mdBook, MediaWiki/ArchWiki, Sites) -> EPUB 3.3 com subtópicos hierárquicos (4.1.1, 4.1.5.1)"
+    name = "any2epub",
+    version = "0.10.0",
+    about = "Conversor autoral multi-fonte (PDF, mdBook, MediaWiki/ArchWiki, Sites) -> EPUB 3.3 com validação W3C e suporte a visualizador KOReader/Rust"
 )]
 pub struct CliArgs {
+    /// Subcomando opcional (`validate`).
+    #[command(subcommand)]
+    pub command: Option<CliCommand>,
+
     /// Caminho do arquivo PDF local ou URL inicial (ex: `https://doc.rust-lang.org/book/`).
     #[arg(short, long)]
-    pub input: String,
+    pub input: Option<String>,
 
     /// Caminho do arquivo EPUB 3.3 de saída.
     #[arg(short, long, default_value = "output_book.epub")]
     pub output: PathBuf,
+
+    /// Executa validação de conformidade estrutural W3C EPUB 3.3 após a geração.
+    #[arg(long)]
+    pub validate: bool,
+
+    /// Abre o visualizador de leitura imediatamente após a conversão.
+    #[arg(long)]
+    pub view: bool,
+
+    /// Emite relatórios ou dados em formato JSON estruturado (ideal para CI/automações).
+    #[arg(long)]
+    pub json: bool,
+
+    /// Modo silencioso: oculta mensagens de progresso informativas em stderr.
+    #[arg(short, long)]
+    pub quiet: bool,
 
     /// Modo de extração da fonte (`auto`, `pdf`, `web-article`, `web-docs`, `media-wiki`, etc.).
     #[arg(long, value_enum, default_value_t = SourceKind::Auto)]
