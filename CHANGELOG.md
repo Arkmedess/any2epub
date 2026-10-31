@@ -13,6 +13,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Conversão de `PageBitmap` RGBA8888 para framebuffer nativo ARGB `u32` via `to_argb_u32`.
   - Navegação de leitura por teclado (setas, espaço, PageDown/PageUp), alternância de motor (`m`), temas (`t`), zoom de fonte (`+`/`-`) e saída (`q`/`Esc`).
   - Flag `--gui` / `-g` no subcomando `view` e como flag pós-conversão no `any2epub`.
+- Documentação técnica e arquitetural Docs-as-Code segundo o Diátaxis Framework:
+  - Registro de Decisão Arquitetural oficial MADR: `docs/adr/0001-motor-visualizador-koreader-e-desktop-minifb.md`.
+  - Documentação de Arquitetura C4 com diagramas Mermaid embutidos (Contexto, Contêineres e Fatias): `docs/architecture/visualizador_koreader_rust.md`.
+  - Documentação local de escopo da fatia vertical: `src/viewer/README.md`.
+  - Atualização abrangente do `README.md` raiz com matriz de atalhos de teclado, guia de compilação `--features gui` e topologia de arquivos.
 
 ## [0.10.0] - 2026-10-30
 
