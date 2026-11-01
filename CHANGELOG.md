@@ -16,8 +16,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Documentação técnica e arquitetural Docs-as-Code segundo o Diátaxis Framework:
   - Registro de Decisão Arquitetural oficial MADR: `docs/adr/0001-motor-visualizador-koreader-e-desktop-minifb.md`.
   - Documentação de Arquitetura C4 com diagramas Mermaid embutidos (Contexto, Contêineres e Fatias): `docs/architecture/visualizador_koreader_rust.md`.
-  - Documentação local de escopo da fatia vertical: `src/viewer/README.md`.
-  - Atualização abrangente do `README.md` raiz com matriz de atalhos de teclado, guia de compilação `--features gui` e topologia de arquivos.
+  - Documentação local de escopo das fatias verticais: `src/viewer/README.md`, `src/cli/README.md`, `src/domain/README.md`, `src/epub/README.md`, `src/extractors/README.md` e `src/utils/README.md`.
+  - Atualização abrangente do `README.md` raiz com matriz de atalhos de teclado, guia de compilação `--features gui` e topologia completa de módulos.
 
 ## [0.10.0] - 2026-10-30
 
