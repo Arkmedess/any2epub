@@ -1,0 +1,104 @@
+/* Design Tokens Oficiais — any2epub Web Showcase */
+
+:root {
+  /* Declaração nativa de tema para navegador */
+  color-scheme: light dark;
+
+  /* Superfícies e Fundos (oklch) */
+  --bg-canvas: light-dark(oklch(98.5% 0.005 85), oklch(13% 0.015 250));
+  --surface-card: light-dark(oklch(100% 0 0), oklch(17% 0.02 250));
+  --surface-raised: light-dark(oklch(96% 0.01 85), oklch(21% 0.025 250));
+  --surface-border: light-dark(oklch(88% 0.01 85), oklch(27% 0.02 250));
+  --surface-border-subtle: light-dark(oklch(92% 0.008 85), oklch(23% 0.015 250));
+
+  /* Tipografia */
+  --text-primary: light-dark(oklch(18% 0.02 250), oklch(96% 0.005 85));
+  --text-secondary: light-dark(oklch(40% 0.02 250), oklch(76% 0.01 250));
+  --text-muted: light-dark(oklch(58% 0.01 250), oklch(56% 0.01 250));
+
+  /* Cores de Marca & Acentos */
+  --accent-rust: oklch(58% 0.20 42);
+  --accent-rust-hover: oklch(52% 0.22 42);
+  --accent-rust-subtle: light-dark(oklch(94% 0.03 42), oklch(24% 0.05 42));
+  --accent-teal: oklch(65% 0.14 195);
+  --accent-emerald: oklch(62% 0.17 150);
+
+  /* Temas de Leitura estilo KOReader */
+  --theme-paper-bg: #FAF8F5;
+  --theme-paper-text: #222222;
+  --theme-sepia-bg: #F4ECD8;
+  --theme-sepia-text: #433422;
+  --theme-night-bg: #18181A;
+  --theme-night-text: #D6D6D8;
+  --theme-eink-bg: #EAEAE5;
+  --theme-eink-text: #111111;
+
+  /* Espaçamentos e Geometria */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Tipografia */
+  --font-serif: "Newsreader", "Charter", "Iowan Old Style", "Georgia", serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
+
+  /* Transições Suaves */
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+}
+
+/* Reset Moderno */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  accent-color: var(--accent-rust);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tipografia Editorial */
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  color: var(--text-primary);
+  line-height: 1.15;
+  text-wrap: balance;
+  font-weight: 600;
+}
+
+p {
+  text-wrap: pretty;
+  max-width: 72ch;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+code, kbd, pre {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Foco Acessível (WCAG 2.2 AA) */
+:focus-visible {
+  outline: 2px solid var(--accent-rust);
+  outline-offset: 3px;
+}
