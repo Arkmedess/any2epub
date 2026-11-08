@@ -316,26 +316,49 @@ impl ReaderEngine for NativeRustReaderEngine {
             }
         }
 
-        // Renderização simbólica das linhas para o bitmap
+        // Renderização tipográfica de alta legibilidade das linhas para o bitmap
         let margin_x = self.options.margin_px;
         let mut current_y = self.options.margin_px;
         let font_px = (self.options.font_size_pt * 1.333) as u32;
         let line_height = (font_px as f32 * self.options.line_height_multiplier) as u32;
 
+        let scale = if font_px >= 24 {
+            3u32
+        } else if font_px >= 14 {
+            2u32
+        } else {
+            1u32
+        };
+
         for line in &page.lines {
-            if current_y + font_px >= self.viewport_height.saturating_sub(margin_x) {
+            if current_y + (8 * scale) >= self.viewport_height.saturating_sub(margin_x) {
                 break;
             }
             if !line.text.is_empty() {
-                // Desenha linha no buffer bitmap com peso tipográfico diferenciado para títulos
-                let text_len_px = (line.text.len() as u32 * (font_px / 2))
-                    .min(self.viewport_width.saturating_sub(margin_x * 2));
-                for px in 0..text_len_px {
-                    let x = margin_x + px;
-                    bitmap.set_pixel(x, current_y + font_px, text_color);
-                    if line.is_heading && current_y + font_px + 1 < self.viewport_height {
-                        bitmap.set_pixel(x, current_y + font_px + 1, text_color);
+                let mut cursor_x = margin_x;
+                for ch in line.text.chars() {
+                    if cursor_x + (6 * scale) >= self.viewport_width.saturating_sub(margin_x) {
+                        break;
                     }
+                    let cols = crate::viewer::font::get_glyph_columns(ch);
+                    for (col_idx, &col_bits) in cols.iter().enumerate() {
+                        for row_idx in 0..7 {
+                            if (col_bits & (1 << row_idx)) != 0 {
+                                for sy in 0..scale {
+                                    for sx in 0..scale {
+                                        let px = cursor_x + (col_idx as u32 * scale) + sx;
+                                        let py = current_y + (row_idx as u32 * scale) + sy;
+                                        bitmap.set_pixel(px, py, text_color);
+                                        // Reforço negrito para títulos
+                                        if line.is_heading {
+                                            bitmap.set_pixel(px + 1, py, text_color);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    cursor_x += (crate::viewer::font::GLYPH_WIDTH as u32 + 1) * scale;
                 }
             }
             current_y += line_height;

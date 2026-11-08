@@ -2,6 +2,7 @@
 
 pub mod bitmap;
 pub mod engine;
+pub mod font;
 pub mod gui;
 pub mod interactive;
 pub mod koreader;

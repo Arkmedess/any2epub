@@ -100,6 +100,39 @@ fn test_native_rust_reader_engine_lifecycle() {
     let argb = bitmap.to_argb_u32();
     assert_eq!(argb.len(), 800 * 1200);
 
+    // Valida que o renderizador desenha glifos legíveis com padrões verticais de letras
+    // (um traço contínuo puro teria proporção diferente de uma renderização com espaçamento entre letras/colunas)
+    let text_color = ViewerColorTheme::Sepia.text_rgba();
+    let drawn_text_pixels = bitmap
+        .rgba_pixels
+        .chunks_exact(4)
+        .filter(|chunk| chunk == &text_color)
+        .count();
+    assert!(
+        drawn_text_pixels > 50,
+        "Deve conter pixels reais renderizados para o texto legível (encontrados: {})",
+        drawn_text_pixels
+    );
+
+    // Valida que caracteres produzem altura de glifo e não apenas 1 linha horizontal
+    // Inspeciona se há pixels de texto em múltiplos Ys dentro de uma mesma linha
+    let margin_x = 40u32;
+    let mut distinct_ys_with_text = 0;
+    for y in margin_x..(margin_x + 30) {
+        let has_text_in_row = (margin_x..(margin_x + 300)).any(|x| {
+            let offset = ((y * 800 + x) as usize) * 4;
+            bitmap.rgba_pixels[offset..offset + 4] == text_color
+        });
+        if has_text_in_row {
+            distinct_ys_with_text += 1;
+        }
+    }
+    assert!(
+        distinct_ys_with_text >= 5,
+        "Glifos tipográficos devem ter altura vertical de pelo menos 5 pixels na linha (encontrados: {})",
+        distinct_ys_with_text
+    );
+
     let _ = std::fs::remove_file(&epub_path);
 }
 
