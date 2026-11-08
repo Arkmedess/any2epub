@@ -108,8 +108,10 @@ fn test_native_rust_reader_engine_lifecycle() {
     let text_color = ViewerColorTheme::Sepia.text_rgba();
     let drawn_text_pixels = bitmap
         .rgba_pixels
-        .chunks_exact(4)
-        .filter(|chunk| chunk == &text_color)
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .filter(|&chunk| chunk == &text_color)
         .count();
     assert!(
         drawn_text_pixels > 50,
