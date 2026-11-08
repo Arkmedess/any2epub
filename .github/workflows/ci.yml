@@ -26,10 +26,10 @@ jobs:
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install system dependencies (GUI/X11 & PDFium)
+      - name: Install system dependencies (GUI/X11)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libx11-dev libxcursor-dev libxrandr-dev libxi-dev libpdfium-dev
+          sudo apt-get install -y --no-install-recommends libx11-dev libxcursor-dev libxrandr-dev libxi-dev
 
       - name: Check code formatting
         run: cargo fmt --all -- --check
@@ -51,10 +51,10 @@ jobs:
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install system dependencies
+      - name: Install system dependencies (GUI/X11)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libx11-dev libxcursor-dev libxrandr-dev libxi-dev libpdfium-dev
+          sudo apt-get install -y --no-install-recommends libx11-dev libxcursor-dev libxrandr-dev libxi-dev
 
       - name: Run unit & integration tests
         run: cargo test --features gui
