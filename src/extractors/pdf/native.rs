@@ -58,7 +58,12 @@ pub fn extract_pdf_with_cover_and_figures(
                         || fn_lower.contains("italic")
                         || fn_lower.contains("oblique");
                     let is_bold = fn_lower.contains("bold") || fn_lower.contains("semibold");
-                    let is_monospace = fn_lower.contains("lekton") || fn_lower.contains("mono");
+                    let is_monospace = fn_lower.contains("mono")
+                        || fn_lower.contains("courier")
+                        || fn_lower.contains("consolas")
+                        || fn_lower.contains("code")
+                        || fn_lower.contains("lekton")
+                        || fn_lower.contains("menlo");
 
                     let top = (height - bounds.top().value).max(0.0);
                     let bottom = (height - bounds.bottom().value).max(top);
@@ -80,7 +85,8 @@ pub fn extract_pdf_with_cover_and_figures(
                 if let (Ok(bounds), Ok(raw_img)) = (object.bounds(), img_obj.get_raw_image()) {
                     let w_pt = bounds.right().value - bounds.left().value;
                     let h_pt = bounds.top().value - bounds.bottom().value;
-                    if w_pt > 85.0 && h_pt > 55.0 && page_idx >= 19 {
+                    // Extrai figuras com dimensão relevante (evita ícones decorativos ínfimos)
+                    if w_pt > 85.0 && h_pt > 55.0 {
                         let mut buf = Cursor::new(Vec::new());
                         if raw_img.write_to(&mut buf, ImageFormat::Jpeg).is_ok() {
                             let fig_id = format!("fig_{:03}", fig_counter);

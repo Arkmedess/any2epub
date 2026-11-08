@@ -158,10 +158,20 @@ impl PdfProsePipeline {
         for mut cluster in clusters {
             cluster.sort_by(|a, b| a.x0.partial_cmp(&b.x0).unwrap_or(std::cmp::Ordering::Equal));
 
+            // Famílias sans-serif/display conhecidas para títulos
+            let is_heading_font = cluster.iter().any(|w| {
+                let fn_lower = w.font_name.to_lowercase();
+                fn_lower.contains("myriad")
+                    || fn_lower.contains("helvetica")
+                    || fn_lower.contains("arial")
+                    || fn_lower.contains("sans")
+                    || fn_lower.contains("display")
+            });
+
             if cluster.len() == 1
                 && cluster[0].text.trim().chars().count() == 1
                 && cluster[0].font_size >= body_font_size * 1.80
-                && !cluster[0].font_name.contains("MyriadPro")
+                && !is_heading_font
             {
                 pending_dropcap = cluster[0].text.trim().chars().next();
                 continue;
@@ -171,7 +181,6 @@ impl PdfProsePipeline {
             let mut max_font_size: f32 = 0.0;
             let x0 = cluster[0].x0;
             let top = cluster[0].top;
-            let is_heading_font = cluster.iter().any(|w| w.font_name.contains("MyriadPro"));
             let is_all_monospace = cluster.iter().all(|w| w.is_monospace);
 
             let first_is_inline_dropcap = cluster.len() > 1

@@ -157,40 +157,29 @@ pub struct CliArgs {
     #[arg(long, default_value_t = 20)]
     pub max_chapters: usize,
 
-    /// Título principal da obra para o manifesto OPF (`<dc:title>`).
-    #[arg(
-        short,
-        long,
-        default_value = "The Rust Programming Language (2024 Edition)"
-    )]
-    pub title: String,
+    /// Título principal da obra para o manifesto OPF (`<dc:title>`). Se omitido, é inferido do nome do arquivo ou fonte.
+    #[arg(short, long)]
+    pub title: Option<String>,
 
-    /// Autores da obra separados por vírgula (`<dc:creator>`).
-    #[arg(
-        short,
-        long,
-        default_value = "Steve Klabnik, Carol Nichols, Chris Krycho"
-    )]
-    pub author: String,
+    /// Autores da obra separados por vírgula (`<dc:creator>`). Se omitido, usa autor padrão genérico.
+    #[arg(short, long)]
+    pub author: Option<String>,
 
     /// Colaborador / Tradutor (`<dc:contributor>`).
-    #[arg(long, default_value = "Rust Community")]
-    pub translator: String,
+    #[arg(long)]
+    pub translator: Option<String>,
 
     /// Editora da publicação (`<dc:publisher>`).
-    #[arg(long, default_value = "No Starch Press / Rust Project")]
-    pub publisher: String,
+    #[arg(long)]
+    pub publisher: Option<String>,
 
-    /// Identificador ISBN ou URI (`<dc:identifier>`).
-    #[arg(long, default_value = "urn:rust-book:2024-edition")]
-    pub isbn: String,
+    /// Identificador ISBN ou URI (`<dc:identifier>`). Se omitido, gera `urn:uuid:<uuid>`.
+    #[arg(long)]
+    pub isbn: Option<String>,
 
     /// Sinopse editorial (`<dc:description>`).
-    #[arg(
-        long,
-        default_value = "Edição completa em EPUB 3.3 com sumário hierárquico multinível (capítulos, subcapítulos X.Y e subtópicos X.Y.Z / X.Y.Z.W ancorados)."
-    )]
-    pub synopsis: String,
+    #[arg(long)]
+    pub synopsis: Option<String>,
 
     /// Código de idioma BCP 47 (padrão: `en` ou `pt-BR`).
     #[arg(short, long, default_value = "en")]
@@ -202,24 +191,62 @@ pub struct CliArgs {
 }
 
 impl CliArgs {
-    /// Constrói a estrutura inicial de [`BookMetadata`] a partir dos argumentos fornecidos na CLI.
+    /// Constrói a estrutura inicial de [`BookMetadata`] a partir dos argumentos fornecidos na CLI
+    /// com inferência automática de metadados quando não especificados.
     pub fn build_base_metadata(&self) -> BookMetadata {
-        let authors: Vec<String> = self
-            .author
-            .split(',')
-            .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty())
-            .collect();
+        let generated_uuid = Uuid::new_v4().to_string();
+
+        let title = match &self.title {
+            Some(t) if !t.trim().is_empty() => t.trim().to_string(),
+            _ => {
+                if let Some(inp) = &self.input {
+                    let path = std::path::Path::new(inp);
+                    if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                        stem.replace(['_', '-'], " ")
+                    } else {
+                        String::from("Untitled Publication")
+                    }
+                } else {
+                    String::from("Untitled Publication")
+                }
+            }
+        };
+
+        let authors: Vec<String> = match &self.author {
+            Some(a) if !a.trim().is_empty() => a
+                .split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect(),
+            _ => vec![String::from("any2epub Author")],
+        };
+
+        let isbn = match &self.isbn {
+            Some(i) if !i.trim().is_empty() => i.trim().to_string(),
+            _ => format!("urn:uuid:{}", generated_uuid),
+        };
+
+        let publisher = match &self.publisher {
+            Some(p) if !p.trim().is_empty() => p.trim().to_string(),
+            _ => String::from("any2epub Universal Engine"),
+        };
+
+        let synopsis = match &self.synopsis {
+            Some(s) if !s.trim().is_empty() => s.trim().to_string(),
+            _ => format!("Publicação '{}' em formato EPUB 3.3 gerada por any2epub.", title),
+        };
+
+        let translator = self.translator.clone().unwrap_or_default();
 
         BookMetadata {
-            uuid: Uuid::new_v4().to_string(),
-            isbn: self.isbn.clone(),
-            title: self.title.clone(),
+            uuid: generated_uuid,
+            isbn,
+            title,
             authors,
-            translator: self.translator.clone(),
-            publisher: self.publisher.clone(),
-            publication_date: String::from("2026-10-15"),
-            synopsis: self.synopsis.clone(),
+            translator,
+            publisher,
+            publication_date: String::from("2026-11-07"),
+            synopsis,
             language: self.lang.clone(),
             cover_jpeg_bytes: None,
         }

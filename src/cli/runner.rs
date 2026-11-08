@@ -224,9 +224,14 @@ pub fn run_cli(args: CliArgs) -> Result<(), Box<dyn std::error::Error>> {
     let builder = NativeEpub3Builder::from_payload(payload);
     builder.save(&args.output)?;
 
-    if !args.quiet {
-        println!(
+    if !args.quiet && !args.json {
+        eprintln!(
             "[+] EPUB 3.3 gerado com sucesso em: {}",
+            args.output.display()
+        );
+    } else if !args.quiet && args.json && !args.validate {
+        println!(
+            "{{\"path\":\"{}\",\"success\":true}}",
             args.output.display()
         );
     }

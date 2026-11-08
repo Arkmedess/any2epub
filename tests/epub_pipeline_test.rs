@@ -175,3 +175,61 @@ fn test_epub_builder_generates_valid_nav_and_opf() {
     assert_eq!(&bytes[0..2], b"PK");
     let _ = std::fs::remove_file(&tmp_path);
 }
+
+#[test]
+fn test_pdf_prose_pipeline_detects_headings_with_generic_sans_fonts() {
+    let page = RawPdfPage {
+        page_index: 2,
+        width: 600.0,
+        height: 800.0,
+        words: vec![
+            PdfWordBox {
+                text: String::from("1.2"),
+                font_name: String::from("Helvetica-Bold"),
+                x0: 72.0,
+                top: 100.0,
+                x1: 95.0,
+                bottom: 120.0,
+                font_size: 16.0,
+                is_italic: false,
+                is_bold: true,
+                is_monospace: false,
+            },
+            PdfWordBox {
+                text: String::from("Visão Geral"),
+                font_name: String::from("Helvetica-Bold"),
+                x0: 102.0,
+                top: 100.0,
+                x1: 220.0,
+                bottom: 120.0,
+                font_size: 16.0,
+                is_italic: false,
+                is_bold: true,
+                is_monospace: false,
+            },
+            PdfWordBox {
+                text: String::from("Parágrafo comum do texto explicativo em fonte serifada."),
+                font_name: String::from("TimesNewRoman"),
+                x0: 72.0,
+                top: 140.0,
+                x1: 350.0,
+                bottom: 152.0,
+                font_size: 10.0,
+                is_italic: false,
+                is_bold: false,
+                is_monospace: false,
+            },
+        ],
+        figures: Vec::new(),
+    };
+
+    let pipeline = PdfProsePipeline::from_pages(std::slice::from_ref(&page), 0.05);
+    let preprocessed = pipeline.preprocess_pages_parallel(&[page]);
+    let (lines, _, _) = &preprocessed[0];
+    assert!(!lines.is_empty());
+    let heading_line = lines
+        .iter()
+        .find(|l| l.raw_text.contains("Visão Geral"))
+        .expect("Linha de título não encontrada");
+    assert!(heading_line.is_heading_font, "Deveria identificar Helvetica-Bold como família de título");
+}
