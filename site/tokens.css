@@ -4,17 +4,29 @@
   /* Declaração nativa de tema para navegador */
   color-scheme: light dark;
 
+  /* Suporte dinâmico a seletor de tema via meta tag */
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
   /* Superfícies e Fundos (oklch) */
   --bg-canvas: light-dark(oklch(98.5% 0.005 85), oklch(13% 0.015 250));
   --surface-card: light-dark(oklch(100% 0 0), oklch(17% 0.02 250));
   --surface-raised: light-dark(oklch(96% 0.01 85), oklch(21% 0.025 250));
+  --surface-container-low: light-dark(oklch(97.5% 0.006 85), oklch(15% 0.018 250));
+  --surface-container-high: light-dark(oklch(93.5% 0.012 85), oklch(24% 0.028 250));
+  --surface-overlay: light-dark(oklch(100% 0 0), oklch(26% 0.03 250));
   --surface-border: light-dark(oklch(88% 0.01 85), oklch(27% 0.02 250));
   --surface-border-subtle: light-dark(oklch(92% 0.008 85), oklch(23% 0.015 250));
+  --border-highlight: light-dark(oklch(1 0 0 / 0.8), oklch(1 0 0 / 0.08));
 
   /* Tipografia */
   --text-primary: light-dark(oklch(18% 0.02 250), oklch(96% 0.005 85));
   --text-secondary: light-dark(oklch(40% 0.02 250), oklch(76% 0.01 250));
-  --text-muted: light-dark(oklch(58% 0.01 250), oklch(56% 0.01 250));
+  --text-muted: light-dark(oklch(56% 0.01 250), oklch(56% 0.01 250));
 
   /* Cores de Marca & Acentos */
   --accent-rust: oklch(58% 0.20 42);
@@ -34,17 +46,19 @@
   --theme-eink-text: #111111;
 
   /* Espaçamentos e Geometria */
+  --navbar-height: 4.25rem;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  --radius-inner: max(0px, calc(var(--radius-lg) - 8px));
 
   /* Tipografia */
   --font-serif: "Newsreader", "Charter", "Iowan Old Style", "Georgia", serif;
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, Menlo, monospace;
 
-  /* Transições Suaves */
+  /* Transições e Física */
   --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
   --duration-fast: 150ms;
   --duration-normal: 220ms;
@@ -73,9 +87,8 @@ body {
   flex-direction: column;
 }
 
-/* Tipografia Editorial */
+/* Tipografia */
 h1, h2, h3, h4 {
-  font-family: var(--font-serif);
   color: var(--text-primary);
   line-height: 1.15;
   text-wrap: balance;
@@ -101,4 +114,44 @@ code, kbd, pre {
 :focus-visible {
   outline: 2px solid var(--accent-rust);
   outline-offset: 3px;
+}
+
+/* Utilitário Acessível para Leitores de Tela */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Tratamento Nativo de Elementos Ocultos */
+[hidden] {
+  display: none !important;
+}
+
+/* Margem de Scroll para Âncoras */
+section[id] {
+  scroll-margin-top: calc(var(--navbar-height) + 1rem);
+}
+
+/* Proteção de Seleção em Prompts e Comentários de Terminal */
+.t-prompt,
+.t-comment {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Redução de Movimento (Acessibilidade) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
