@@ -6,9 +6,7 @@ use any2epub_rs::epub::NativeEpub3Builder;
 use any2epub_rs::viewer::{
     create_reader_engine, ViewerBackendKind, ViewerColorTheme, ViewerRenderOptions,
 };
-use any2epub_rs::{
-    BookMetadata, Chapter, ChapterElement, ExtractedBookPayload,
-};
+use any2epub_rs::{BookMetadata, Chapter, ChapterElement, ExtractedBookPayload};
 
 fn generate_interactive_epub() -> PathBuf {
     let metadata = BookMetadata {
@@ -24,25 +22,23 @@ fn generate_interactive_epub() -> PathBuf {
         cover_jpeg_bytes: None,
     };
 
-    let chapters = vec![
-        Chapter {
-            index: 1,
-            number_prefix: String::from("1"),
-            title: String::from("Capítulo 1: Fundações"),
-            filename: String::from("chapter_001.xhtml"),
-            elements: vec![
-                ChapterElement::SubheadingH2 {
-                    id: String::from("fund"),
-                    number_prefix: String::from("1.1"),
-                    title: String::from("Conceitos"),
-                },
-                ChapterElement::StandardParagraph(String::from("Texto do parágrafo 1.")),
-                ChapterElement::StandardParagraph(String::from("Texto do parágrafo 2.")),
-            ],
-            subtopics: Vec::new(),
-            footnotes: Vec::new(),
-        },
-    ];
+    let chapters = vec![Chapter {
+        index: 1,
+        number_prefix: String::from("1"),
+        title: String::from("Capítulo 1: Fundações"),
+        filename: String::from("chapter_001.xhtml"),
+        elements: vec![
+            ChapterElement::SubheadingH2 {
+                id: String::from("fund"),
+                number_prefix: String::from("1.1"),
+                title: String::from("Conceitos"),
+            },
+            ChapterElement::StandardParagraph(String::from("Texto do parágrafo 1.")),
+            ChapterElement::StandardParagraph(String::from("Texto do parágrafo 2.")),
+        ],
+        subtopics: Vec::new(),
+        footnotes: Vec::new(),
+    }];
 
     let payload = ExtractedBookPayload {
         metadata,
@@ -51,7 +47,8 @@ fn generate_interactive_epub() -> PathBuf {
     };
 
     let builder = NativeEpub3Builder::from_payload(payload);
-    let temp_path = std::env::temp_dir().join(format!("test_interactive_{}.epub", uuid::Uuid::new_v4()));
+    let temp_path =
+        std::env::temp_dir().join(format!("test_interactive_{}.epub", uuid::Uuid::new_v4()));
     builder.save(&temp_path).expect("Falha ao salvar EPUB");
     temp_path
 }
@@ -61,8 +58,8 @@ fn test_reader_engine_backend_switching_preserves_page_state() {
     let epub_path = generate_interactive_epub();
 
     // 1. Inicia com o motor nativo em Rust
-    let mut native_engine = create_reader_engine(ViewerBackendKind::NativeRust)
-        .expect("Falha ao criar native-rust");
+    let mut native_engine =
+        create_reader_engine(ViewerBackendKind::NativeRust).expect("Falha ao criar native-rust");
     let details = native_engine
         .open_book(&epub_path)
         .expect("Falha ao abrir livro no native");

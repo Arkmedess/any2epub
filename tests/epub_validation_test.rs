@@ -46,7 +46,8 @@ fn test_generated_epub_passes_w3c_validation() {
     let payload = sample_payload();
     let builder = NativeEpub3Builder::from_payload(payload);
 
-    let temp_path = std::env::temp_dir().join(format!("test_valid_epub_{}.epub", uuid::Uuid::new_v4()));
+    let temp_path =
+        std::env::temp_dir().join(format!("test_valid_epub_{}.epub", uuid::Uuid::new_v4()));
 
     builder.save(&temp_path).expect("Falha ao salvar EPUB");
 
@@ -67,7 +68,8 @@ fn test_generated_epub_passes_w3c_validation() {
 
 #[test]
 fn test_corrupted_mimetype_fails_validation() {
-    let temp_path = std::env::temp_dir().join(format!("test_corrupted_epub_{}.epub", uuid::Uuid::new_v4()));
+    let temp_path =
+        std::env::temp_dir().join(format!("test_corrupted_epub_{}.epub", uuid::Uuid::new_v4()));
 
     // Cria um arquivo ZIP inválido sem mimetype no offset 0
     let file = File::create(&temp_path).expect("Falha ao criar arquivo");
@@ -77,17 +79,13 @@ fn test_corrupted_mimetype_fails_validation() {
     zip.write_all(b"dados aleatorios").unwrap();
     zip.finish().unwrap();
 
-    let report = NativeEpubValidator::validate_file(&temp_path)
-        .expect("Falha ao validar arquivo");
+    let report = NativeEpubValidator::validate_file(&temp_path).expect("Falha ao validar arquivo");
 
     let _ = std::fs::remove_file(&temp_path);
 
     assert!(!report.is_valid);
     assert!(
-        report
-            .errors
-            .iter()
-            .any(|e| e.contains("mimetype")),
+        report.errors.iter().any(|e| e.contains("mimetype")),
         "Deveria reportar erro de mimetype ausente no offset 0"
     );
 }

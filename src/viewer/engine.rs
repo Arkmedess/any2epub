@@ -100,9 +100,7 @@ pub trait ReaderEngine: Send {
 }
 
 /// Fábrica para instanciar o motor de visualização solicitado pelo usuário.
-pub fn create_reader_engine(
-    kind: ViewerBackendKind,
-) -> Result<Box<dyn ReaderEngine>, ViewerError> {
+pub fn create_reader_engine(kind: ViewerBackendKind) -> Result<Box<dyn ReaderEngine>, ViewerError> {
     match kind {
         ViewerBackendKind::NativeRust => Ok(Box::new(NativeRustReaderEngine::new())),
         ViewerBackendKind::KoreaderCrengine => Ok(Box::new(KoreaderCrengineEngine::new())),

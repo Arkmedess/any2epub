@@ -233,7 +233,10 @@ impl CliArgs {
 
         let synopsis = match &self.synopsis {
             Some(s) if !s.trim().is_empty() => s.trim().to_string(),
-            _ => format!("Publicação '{}' em formato EPUB 3.3 gerada por any2epub.", title),
+            _ => format!(
+                "Publicação '{}' em formato EPUB 3.3 gerada por any2epub.",
+                title
+            ),
         };
 
         let translator = self.translator.clone().unwrap_or_default();

@@ -11,8 +11,10 @@ pub struct CRDocViewOpaque {
 /// Assinaturas canônicas de FFI exportadas pela biblioteca compartilhada `libcrengine` ou wrapper C.
 pub type FnCrDocViewCreate = unsafe extern "C" fn() -> *mut CRDocViewOpaque;
 pub type FnCrDocViewDestroy = unsafe extern "C" fn(view: *mut CRDocViewOpaque);
-pub type FnCrDocViewLoadDocument = unsafe extern "C" fn(view: *mut CRDocViewOpaque, path: *const c_char) -> c_int;
-pub type FnCrDocViewResize = unsafe extern "C" fn(view: *mut CRDocViewOpaque, width: c_int, height: c_int);
+pub type FnCrDocViewLoadDocument =
+    unsafe extern "C" fn(view: *mut CRDocViewOpaque, path: *const c_char) -> c_int;
+pub type FnCrDocViewResize =
+    unsafe extern "C" fn(view: *mut CRDocViewOpaque, width: c_int, height: c_int);
 pub type FnCrDocViewGetPageCount = unsafe extern "C" fn(view: *mut CRDocViewOpaque) -> c_int;
 pub type FnCrDocViewRenderPage = unsafe extern "C" fn(
     view: *mut CRDocViewOpaque,
@@ -20,7 +22,8 @@ pub type FnCrDocViewRenderPage = unsafe extern "C" fn(
     buffer: *mut c_void,
     bytes_per_row: c_int,
 ) -> c_int;
-pub type FnCrDocViewSetFontSize = unsafe extern "C" fn(view: *mut CRDocViewOpaque, font_size_pt: c_int);
+pub type FnCrDocViewSetFontSize =
+    unsafe extern "C" fn(view: *mut CRDocViewOpaque, font_size_pt: c_int);
 
 /// Tabela de símbolos FFI carregados dinamicamente para o backend `crengine`.
 pub struct CrengineFfiTable {

@@ -52,7 +52,8 @@ impl LocalMarkdownExtractor {
                 h3_counter = 0;
                 h4_counter = 0;
                 let raw_text = heading_text.trim();
-                let number_prefix = extract_or_build_prefix(raw_text, &format!("{}.{}", chapter_index, h2_counter));
+                let number_prefix =
+                    extract_or_build_prefix(raw_text, &format!("{}.{}", chapter_index, h2_counter));
                 let clean_text = strip_leading_number_prefix(raw_text);
                 let anchor_id = slugify_anchor_id(clean_text, h2_counter);
                 let href = format!("{}#{}", filename, anchor_id);
@@ -106,7 +107,10 @@ impl LocalMarkdownExtractor {
                 let raw_text = heading_text.trim();
                 let number_prefix = extract_or_build_prefix(
                     raw_text,
-                    &format!("{}.{}.{}.{}", chapter_index, h2_counter, h3_counter, h4_counter),
+                    &format!(
+                        "{}.{}.{}.{}",
+                        chapter_index, h2_counter, h3_counter, h4_counter
+                    ),
                 );
                 let clean_text = strip_leading_number_prefix(raw_text);
                 let anchor_id = slugify_anchor_id(clean_text, h4_counter);
@@ -199,7 +203,9 @@ impl LocalMarkdownExtractor {
             }
 
             // 6. Parágrafos comuns de prosa
-            elements.push(ChapterElement::StandardParagraph(escape_xhtml_fast(trimmed)));
+            elements.push(ChapterElement::StandardParagraph(escape_xhtml_fast(
+                trimmed,
+            )));
         }
 
         Chapter {

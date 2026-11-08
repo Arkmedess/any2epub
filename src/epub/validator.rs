@@ -90,7 +90,10 @@ impl NativeEpubValidator {
                 }
             }
             Err(e) => {
-                errors.push(format!("Falha ao inspecionar primeira entrada do contêiner: {}", e));
+                errors.push(format!(
+                    "Falha ao inspecionar primeira entrada do contêiner: {}",
+                    e
+                ));
             }
         }
 
@@ -133,7 +136,9 @@ impl NativeEpubValidator {
             let opf_read_result = match archive.by_name(&opf_path) {
                 Ok(mut opf_file) => {
                     let mut opf_content = String::new();
-                    opf_file.read_to_string(&mut opf_content).map(|_| opf_content)
+                    opf_file
+                        .read_to_string(&mut opf_content)
+                        .map(|_| opf_content)
                 }
                 Err(_) => {
                     errors.push(format!(
@@ -154,13 +159,19 @@ impl NativeEpubValidator {
                     ));
                 }
                 if !opf_content.contains("<dc:identifier") {
-                    errors.push(String::from("Violação Dublin Core: <dc:identifier> ausente no OPF."));
+                    errors.push(String::from(
+                        "Violação Dublin Core: <dc:identifier> ausente no OPF.",
+                    ));
                 }
                 if !opf_content.contains("<dc:title") {
-                    errors.push(String::from("Violação Dublin Core: <dc:title> ausente no OPF."));
+                    errors.push(String::from(
+                        "Violação Dublin Core: <dc:title> ausente no OPF.",
+                    ));
                 }
                 if !opf_content.contains("<dc:language") {
-                    errors.push(String::from("Violação Dublin Core: <dc:language> ausente no OPF."));
+                    errors.push(String::from(
+                        "Violação Dublin Core: <dc:language> ausente no OPF.",
+                    ));
                 }
 
                 let mut cursor = 0;

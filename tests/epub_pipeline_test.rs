@@ -231,5 +231,8 @@ fn test_pdf_prose_pipeline_detects_headings_with_generic_sans_fonts() {
         .iter()
         .find(|l| l.raw_text.contains("Visão Geral"))
         .expect("Linha de título não encontrada");
-    assert!(heading_line.is_heading_font, "Deveria identificar Helvetica-Bold como família de título");
+    assert!(
+        heading_line.is_heading_font,
+        "Deveria identificar Helvetica-Bold como família de título"
+    );
 }

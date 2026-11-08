@@ -35,14 +35,20 @@ pub fn run_interactive_viewer(
         write!(stdout, "\x1B[2J\x1B[1;1H")?;
 
         // Barra Superior
-        writeln!(stdout, "╔════════════════════════════════════════════════════════════════════════════════╗")?;
+        writeln!(
+            stdout,
+            "╔════════════════════════════════════════════════════════════════════════════════╗"
+        )?;
         writeln!(
             stdout,
             "║ 📖 {} │ Motor: {:<16} ║",
             truncate_str(&details.title, 45),
             engine.engine_name()
         )?;
-        writeln!(stdout, "╚════════════════════════════════════════════════════════════════════════════════╝")?;
+        writeln!(
+            stdout,
+            "╚════════════════════════════════════════════════════════════════════════════════╝"
+        )?;
 
         // Renderiza a página no motor (calculando o bitmap e gerando o layout visual)
         let _bitmap = engine.render_page(current_page)?;
@@ -63,7 +69,10 @@ pub fn run_interactive_viewer(
         let est_minutes =
             ((total_pages.saturating_sub(current_page + 1)) as f32 * 1.2).ceil() as usize;
 
-        writeln!(stdout, "──────────────────────────────────────────────────────────────────────────────────")?;
+        writeln!(
+            stdout,
+            "──────────────────────────────────────────────────────────────────────────────────"
+        )?;
         writeln!(
             stdout,
             " {} Pág. {} de {} ({:.1}%) │ Restante: ~{} min │ Tema: {:?}",
@@ -78,7 +87,10 @@ pub fn run_interactive_viewer(
             stdout,
             " [n/Enter] Próx │ [p] Ant │ [m] Alternar Motor │ [t] Tema │ [g N] Ir p/ │ [q] Sair"
         )?;
-        writeln!(stdout, "──────────────────────────────────────────────────────────────────────────────────")?;
+        writeln!(
+            stdout,
+            "──────────────────────────────────────────────────────────────────────────────────"
+        )?;
         write!(stdout, "> ")?;
         stdout.flush()?;
 

@@ -4,9 +4,7 @@ use std::path::PathBuf;
 
 use any2epub_rs::cli::{handle_validate_command, handle_view_command};
 use any2epub_rs::epub::NativeEpub3Builder;
-use any2epub_rs::{
-    BookMetadata, Chapter, ChapterElement, ExtractedBookPayload,
-};
+use any2epub_rs::{BookMetadata, Chapter, ChapterElement, ExtractedBookPayload};
 
 fn generate_fixture_epub() -> PathBuf {
     let metadata = BookMetadata {
@@ -49,7 +47,9 @@ fn generate_fixture_epub() -> PathBuf {
 
     let builder = NativeEpub3Builder::from_payload(payload);
     let temp_path = std::env::temp_dir().join(format!("cli_test_{}.epub", uuid::Uuid::new_v4()));
-    builder.save(&temp_path).expect("Falha ao salvar fixture EPUB");
+    builder
+        .save(&temp_path)
+        .expect("Falha ao salvar fixture EPUB");
     temp_path
 }
 
@@ -78,7 +78,13 @@ fn test_cli_build_base_metadata_without_hardcoded_defaults() {
     use clap::Parser;
 
     // Teste 1: Parsing sem flags de metadados não deve conter defaults de "The Rust Programming Language"
-    let args = CliArgs::parse_from(["any2epub", "-i", "docs/meu_livro.md", "-o", "meu_livro.epub"]);
+    let args = CliArgs::parse_from([
+        "any2epub",
+        "-i",
+        "docs/meu_livro.md",
+        "-o",
+        "meu_livro.epub",
+    ]);
     assert_eq!(args.title, None);
     assert_eq!(args.author, None);
     assert_eq!(args.publisher, None);
@@ -93,19 +99,29 @@ fn test_cli_build_base_metadata_without_hardcoded_defaults() {
     // Teste 2: Parsing fornecendo metadados explicitamente
     let custom_args = CliArgs::parse_from([
         "any2epub",
-        "-i", "documento.pdf",
-        "--title", "Arquitetura Limpa",
-        "--author", "Robert Martin",
-        "--publisher", "Alta Books",
-        "--isbn", "978-85-508-0460-6",
-        "--synopsis", "Guia do artesão de estrutura de software.",
-        "--lang", "pt-BR",
+        "-i",
+        "documento.pdf",
+        "--title",
+        "Arquitetura Limpa",
+        "--author",
+        "Robert Martin",
+        "--publisher",
+        "Alta Books",
+        "--isbn",
+        "978-85-508-0460-6",
+        "--synopsis",
+        "Guia do artesão de estrutura de software.",
+        "--lang",
+        "pt-BR",
     ]);
     let custom_meta = custom_args.build_base_metadata();
     assert_eq!(custom_meta.title, "Arquitetura Limpa");
     assert_eq!(custom_meta.authors, vec!["Robert Martin"]);
     assert_eq!(custom_meta.publisher, "Alta Books");
     assert_eq!(custom_meta.isbn, "978-85-508-0460-6");
-    assert_eq!(custom_meta.synopsis, "Guia do artesão de estrutura de software.");
+    assert_eq!(
+        custom_meta.synopsis,
+        "Guia do artesão de estrutura de software."
+    );
     assert_eq!(custom_meta.language, "pt-BR");
 }

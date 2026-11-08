@@ -10,9 +10,7 @@ pub mod native;
 pub mod options;
 
 pub use bitmap::PageBitmap;
-pub use engine::{
-    create_reader_engine, BookDetails, ReaderEngine, ViewerBackendKind, ViewerError,
-};
+pub use engine::{create_reader_engine, BookDetails, ReaderEngine, ViewerBackendKind, ViewerError};
 pub use gui::run_gui_viewer;
 pub use interactive::run_interactive_viewer;
 pub use koreader::KoreaderCrengineEngine;

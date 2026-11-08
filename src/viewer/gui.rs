@@ -51,8 +51,9 @@ pub fn run_gui_viewer(
         ..WindowOptions::default()
     };
 
-    let mut window = Window::new(&window_title, width, height, window_opts)
-        .map_err(|e| ViewerError::BackendUnavailable(format!("Falha ao abrir janela gráfica: {}", e)))?;
+    let mut window = Window::new(&window_title, width, height, window_opts).map_err(|e| {
+        ViewerError::BackendUnavailable(format!("Falha ao abrir janela gráfica: {}", e))
+    })?;
 
     // Limita a taxa de atualização a 60 FPS
     window.set_target_fps(60);
@@ -140,7 +141,9 @@ pub fn run_gui_viewer(
 
         window
             .update_with_buffer(&pixel_buffer, width, height)
-            .map_err(|e| ViewerError::BackendUnavailable(format!("Erro de atualização de buffer: {}", e)))?;
+            .map_err(|e| {
+                ViewerError::BackendUnavailable(format!("Erro de atualização de buffer: {}", e))
+            })?;
     }
 
     Ok(())

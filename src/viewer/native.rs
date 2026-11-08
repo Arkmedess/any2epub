@@ -143,8 +143,9 @@ impl ReaderEngine for NativeRustReaderEngine {
             })?;
             let mut content = String::new();
             container_file.read_to_string(&mut content)?;
-            extract_attr_val(&content, "full-path")
-                .ok_or_else(|| ViewerError::XmlError("Atributo full-path ausente no container.xml".into()))?
+            extract_attr_val(&content, "full-path").ok_or_else(|| {
+                ViewerError::XmlError("Atributo full-path ausente no container.xml".into())
+            })?
         };
 
         let opf_base_dir = if let Some(slash) = opf_path.rfind('/') {
@@ -194,7 +195,9 @@ impl ReaderEngine for NativeRustReaderEngine {
                 let actual = man_cursor + start;
                 if let Some(end) = opf_content[actual..].find('>') {
                     let tag = &opf_content[actual..actual + end];
-                    if let (Some(id), Some(href)) = (extract_attr_val(tag, "id"), extract_attr_val(tag, "href")) {
+                    if let (Some(id), Some(href)) =
+                        (extract_attr_val(tag, "id"), extract_attr_val(tag, "href"))
+                    {
                         manifest.insert(id, href);
                     }
                     man_cursor = actual + end;

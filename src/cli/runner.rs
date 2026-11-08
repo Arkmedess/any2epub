@@ -49,7 +49,10 @@ pub fn print_validation_report(report: &ValidationReport, as_json: bool, target_
             }
         );
         println!("    Arquivos no contêiner: {}", report.total_files);
-        println!("    Itens no spine (capítulos/seções): {}", report.spine_items);
+        println!(
+            "    Itens no spine (capítulos/seções): {}",
+            report.spine_items
+        );
 
         if !report.warnings.is_empty() {
             println!("    Advertências ({}):", report.warnings.len());
@@ -130,7 +133,10 @@ pub fn handle_view_command(
             details.authors.join(", ")
         }
     );
-    println!("    Total de Seções no Spine: {}", details.spine_documents_count);
+    println!(
+        "    Total de Seções no Spine: {}",
+        details.spine_documents_count
+    );
     println!(
         "    Paginação Atual: Página {} de {} ({:.1}%)",
         current_page + 1,

@@ -85,10 +85,7 @@ fn test_local_markdown_extractor_extracts_elements_and_generates_valid_epub() {
     assert_eq!(chapter.title, "Capítulo 1: Arquitetura e Princípios SOLID");
     assert_eq!(chapter.subtopics.len(), 1);
     assert_eq!(chapter.subtopics[0].number_prefix, "1.1");
-    assert_eq!(
-        chapter.subtopics[0].title,
-        "Inversão de Dependência (DIP)"
-    );
+    assert_eq!(chapter.subtopics[0].title, "Inversão de Dependência (DIP)");
 
     // Valida elementos extraídos
     let has_callout = chapter.elements.iter().any(|el| {
