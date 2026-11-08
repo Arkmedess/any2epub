@@ -1,6 +1,6 @@
 [package]
 name = "any2epub-rs"
-version = "0.10.0"
+version = "0.11.0"
 edition = "2021"
 authors = ["any2epub-rs Contributors"]
 description = "Conversor Universal Multi-Engine (PDF, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para W3C EPUB 3.3 com Extração Profunda na Raiz"

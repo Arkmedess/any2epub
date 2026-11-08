@@ -1,4 +1,4 @@
-//! # `any2epub-rs` (`v0.10.0`) — Motor Autoral Multi-Fonte para W3C EPUB 3.3
+//! # `any2epub-rs` (`v0.11.0`) — Motor Autoral Multi-Fonte para W3C EPUB 3.3
 //!
 //! Biblioteca e pipeline modular em Rust projetado para converter:
 //! 1. **Livros em PDF de centenas de páginas** (com reparo de CMap CID, capa e figuras),

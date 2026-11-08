@@ -7,17 +7,25 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-07
+
 ### Adicionado
-- Interface gráfica desktop nativa do visualizador de leitura (`run_gui_viewer` via feature `gui` e `minifb`):
-  - Janela desktop nativa interativa (800x1050) com taxa de atualização de 60 FPS e baixo consumo de recursos.
-  - Conversão de `PageBitmap` RGBA8888 para framebuffer nativo ARGB `u32` via `to_argb_u32`.
-  - Navegação de leitura por teclado (setas, espaço, PageDown/PageUp), alternância de motor (`m`), temas (`t`), zoom de fonte (`+`/`-`) e saída (`q`/`Esc`).
-  - Flag `--gui` / `-g` no subcomando `view` e como flag pós-conversão no `any2epub`.
-- Documentação técnica e arquitetural Docs-as-Code segundo o Diátaxis Framework:
-  - Registro de Decisão Arquitetural oficial MADR: `docs/adr/0001-motor-visualizador-koreader-e-desktop-minifb.md`.
-  - Documentação de Arquitetura C4 com diagramas Mermaid embutidos (Contexto, Contêineres e Fatias): `docs/architecture/visualizador_koreader_rust.md`.
-  - Documentação local de escopo das fatias verticais: `src/viewer/README.md`, `src/cli/README.md`, `src/domain/README.md`, `src/epub/README.md`, `src/extractors/README.md` e `src/utils/README.md`.
-  - Atualização abrangente do `README.md` raiz com matriz de atalhos de teclado, guia de compilação `--features gui` e topologia completa de módulos.
+- Rasterizador nativo de glifos tipográficos (`src/viewer/font.rs`) com matriz monocromática 5x7 e renderização de caracteres legíveis e escaláveis com reforço negrito para títulos no buffer RGBA de `NativeRustReaderEngine`.
+- Pipelines automatizados de CI/CD via GitHub Actions:
+  - `.github/workflows/ci.yml`: verificação contínua de formatação (`cargo fmt`), lint (`cargo clippy --all-targets --features gui`) e suíte de testes completa.
+  - `.github/workflows/release.yml`: matriz de compilação multiplataforma (Linux x86_64, macOS Apple Silicon e Windows x86_64) com cálculo determinístico de `SHA256SUMS` e publicação via GitHub CLI.
+- Manifesto `Dockerfile` multi-stage rootless para execução e conversão headless em contêineres e servidores com `libpdfium-dev`.
+- Metadados formais de publicação e empacotamento no manifesto `Cargo.toml` (`repository`, `homepage`, `keywords`, `categories`, `exclude`).
+
+### Modificado
+- Auto-inferência inteligente de metadados na CLI (`src/cli/args.rs`): remoção dos valores padrão hardcoded do *Rust Book*; inferência do título a partir do arquivo de entrada e geração automática de UUID para identificador `urn:uuid:<uuid>`.
+- Separação estrita de streams POSIX (`stdout` vs. `stderr`): logs de progresso e status direcionados a `stderr`; `stdout` reservado exclusivamente para dados e JSON de validação.
+- Generalização algorítmica de heurísticas de PDF em `src/extractors/pdf/`:
+  - `native.rs`: remoção da trava arbitrária `page_idx >= 19`, permitindo extração de figuras ilustrativas em qualquer página do documento; detecção ampliada de fontes monoespaçadas (`mono`, `courier`, `consolas`, `code`, `lekton`, `menlo`).
+  - `pipeline.rs`: detecção universal de famílias sem serifa/display (`sans`, `helvetica`, `arial`, `display`, `myriad`) para linhas de títulos de capítulos e seções.
+
+### Corrigido
+- Formatação e integridade de streams de saída para integração com ferramentas de automação e piping (`jq`).
 
 ## [0.10.0] - 2026-10-30
 

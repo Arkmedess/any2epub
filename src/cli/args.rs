@@ -102,7 +102,7 @@ pub enum CliCommand {
 #[derive(Parser, Debug, Clone)]
 #[command(
     name = "any2epub",
-    version = "0.10.0",
+    version = "0.11.0",
     about = "Conversor autoral multi-fonte (PDF, mdBook, MediaWiki/ArchWiki, Sites) -> EPUB 3.3 com validação W3C e suporte a visualizador KOReader/Rust"
 )]
 pub struct CliArgs {

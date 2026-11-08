@@ -1,4 +1,4 @@
-# `any2epub-rs` v0.10.0 — Conversor Universal Multi-Engine com Extração Profunda na Raiz (PDF, Markdown, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para EPUB 3.3 com Visualizador KOReader/Rust Integrado
+# `any2epub-rs` v0.11.0 — Conversor Universal Multi-Engine com Extração Profunda na Raiz (PDF, Markdown, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para EPUB 3.3 com Visualizador KOReader/Rust Integrado
 
 Conversor nativo de alta performance escrito em **Rust** para transformar livros em PDF (com decodificação de fontes CID sem `/ToUnicode` e extração de figuras), coleções de documentação em **Markdown local** e portais técnicos na Web ([**mdBook**](https://rust-lang.github.io/mdBook/), [**MediaWiki**](https://www.mediawiki.org/wiki/MediaWiki), [**MDN Yari Engine**](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide), [**Pro Git AsciiDoc**](https://git-scm.com/book/en/v2), [**Sphinx Python Docs**](https://docs.python.org/3/tutorial/index.html) e [**Effective Go Spec**](https://go.dev/doc/effective_go)) em e-books [**EPUB 3.3 (W3C)**](https://www.w3.org/TR/epub-33/).
 
