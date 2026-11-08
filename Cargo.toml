@@ -5,6 +5,12 @@ edition = "2021"
 authors = ["any2epub-rs Contributors"]
 description = "Conversor Universal Multi-Engine (PDF, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para W3C EPUB 3.3 com Extração Profunda na Raiz"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/Arkmedess/any2epub"
+homepage = "https://github.com/Arkmedess/any2epub"
+readme = "README.md"
+keywords = ["epub", "converter", "pdf", "markdown", "koreader"]
+categories = ["command-line-utilities", "text-processing", "parser-implementations"]
+exclude = ["dist/*", "*.epub", "docs/adr/*"]
 
 [lib]
 name = "any2epub_rs"
