@@ -38,7 +38,7 @@ impl PageBitmap {
     pub fn to_argb_u32(&self) -> Vec<u32> {
         let total_pixels = (self.width as usize) * (self.height as usize);
         let mut buffer = Vec::with_capacity(total_pixels);
-        for chunk in self.rgba_pixels.chunks_exact(4) {
+        for chunk in self.rgba_pixels.as_chunks::<4>().0 {
             let r = chunk[0] as u32;
             let g = chunk[1] as u32;
             let b = chunk[2] as u32;
