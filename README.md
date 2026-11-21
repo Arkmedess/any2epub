@@ -1,187 +1,189 @@
-# `any2epub-rs` v0.11.0 — Conversor Universal Multi-Engine com Extração Profunda na Raiz (PDF, Markdown, mdBook, MediaWiki, MDN Yari, Pro Git AsciiDoc, Sphinx & Go Spec) para EPUB 3.3 com Visualizador KOReader/Rust Integrado
+# any2epub
 
-Conversor nativo de alta performance escrito em **Rust** para transformar livros em PDF (com decodificação de fontes CID sem `/ToUnicode` e extração de figuras), coleções de documentação em **Markdown local** e portais técnicos na Web ([**mdBook**](https://rust-lang.github.io/mdBook/), [**MediaWiki**](https://www.mediawiki.org/wiki/MediaWiki), [**MDN Yari Engine**](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide), [**Pro Git AsciiDoc**](https://git-scm.com/book/en/v2), [**Sphinx Python Docs**](https://docs.python.org/3/tutorial/index.html) e [**Effective Go Spec**](https://go.dev/doc/effective_go)) em e-books [**EPUB 3.3 (W3C)**](https://www.w3.org/TR/epub-33/).
+Conversor em **Rust** para transformar livros PDF, diretórios Markdown e documentações técnicas da Web em arquivos **EPUB 3.3** validados contra a especificação W3C. O projeto separa o núcleo **CLI** (conversão headless, automação em CI e validação estrutural) da interface **GUI** (leitor desktop opcional).
 
-Inclui um **Validador Estrutural W3C EPUB 3.3 nativo**, um **Visualizador Multi-Engine (KOReader `crengine` & Rust puro)** e duas interfaces de leitura: **Terminal TUI Interativo** e **Janela Gráfica Desktop Nativa a 60 FPS**.
+[Showcase & Simulador](https://arkmedess.github.io/any2epub/) · [Releases](https://github.com/Arkmedess/any2epub/releases) · [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md)
 
 ---
 
-## Arquitetura Modular em Estágios (Pipeline Architecture)
+## Separação CLI vs. GUI
 
-```text
-any2epub/
-├── Cargo.toml                              # Manifesto oficial da biblioteca e binários CLI (features: gui)
-├── CHANGELOG.md                            # Histórico de versões SemVer no padrão Keep a Changelog
-├── README.md                               # Visão executiva, quickstart e guia de uso
-├── docs/
-│   ├── adr/
-│   │   └── 0001-motor-visualizador-koreader-e-desktop-minifb.md # Decisão arquitetural do visualizador e minifb
-│   ├── architecture/
-│   │   └── visualizador_koreader_rust.md   # Diagramas C4 Mermaid e especificações do motor de leitura
-│   ├── plano_expansao_funcionalidades_epub.md
-│   └── plano_orquestracao_pdf2epub.md
-├── src/
-│   ├── lib.rs                              # Fachada pública da biblioteca (any2epub_rs)
-│   ├── main.rs                             # Ponto de entrada CLI primário (any2epub)
-│   ├── bin/pdf2epub.rs                     # Ponto de entrada CLI legado/alias (pdf2epub)
-│   ├── cli/
-│   │   ├── mod.rs
-│   │   ├── args.rs                         # CliArgs, CliCommand, SourceKind
-│   │   └── runner.rs                       # Orquestrador de comandos da CLI e relatórios
-│   ├── domain/
-│   │   ├── mod.rs
-│   │   ├── metadata.rs                     # BookMetadata e ExtractedFigure
-│   │   ├── ir.rs                           # Representação Intermediária (Chapter, ChapterElement, TocNode)
-│   │   └── traits.rs                       # Contrato polimórfico ContentSourceExtractor
-│   ├── extractors/
-│   │   ├── mod.rs                          # Fábrica polimórfica de extratores
-│   │   ├── markdown.rs                     # LocalMarkdownExtractor (arquivos .md e diretórios)
-│   │   ├── web.rs                          # WebSiteExtractor (mdBook, Sphinx, AsciiDoc, MDN, WebArticle)
-│   │   ├── mediawiki.rs                    # MediaWikiExtractor (ArchWiki e MediaWiki em grafo BFS)
-│   │   ├── spec.rs                         # SinglePageSpecExtractor (Effective Go Spec)
-│   │   └── pdf/
-│   │       ├── mod.rs                      # PdfExtractor implementando ContentSourceExtractor
-│   │       ├── pipeline.rs                 # PdfProsePipeline, moda estatística, drop caps e footnotes
-│   │       ├── cmap.rs                     # repair_broken_cmap_cid (Calibri e Lekton)
-│   │       └── native.rs                   # Integração pdfium-render e extração de figuras/capa
-│   ├── epub/
-│   │   ├── mod.rs                          # NativeEpub3Builder e NativeEpubValidator
-│   │   ├── validator.rs                    # Validação estrutural canônica W3C EPUB 3.3
-│   │   ├── container.rs                    # META-INF/container.xml
-│   │   ├── opf.rs                          # OEBPS/content.opf (Dublin Core, manifest e spine)
-│   │   ├── nav.rs                          # OEBPS/nav.xhtml (sumário hierárquico recursivo)
-│   │   ├── xhtml.rs                        # Serialização XHTML5 de capítulos, capa e sinopse
-│   │   └── css.rs                          # Folha de estilos editorial W3C EPUB 3.3
-│   ├── viewer/                             # Motor de Leitura Multi-Engine estilo KOReader
-│   │   ├── README.md                       # Documentação local da fatia viewer
-│   │   ├── mod.rs                          # Fachada pública do módulo viewer
-│   │   ├── engine.rs                       # Trait ReaderEngine e fábrica create_reader_engine
-│   │   ├── options.rs                      # ViewerRenderOptions e ViewerColorTheme
-│   │   ├── bitmap.rs                       # PageBitmap (RGBA8888) com conversão to_argb_u32
-│   │   ├── interactive.rs                  # Sessão de leitura interativa no terminal (TUI)
-│   │   ├── gui.rs                          # Janela desktop nativa a 60 FPS (minifb)
-│   │   ├── native.rs                       # NativeRustReaderEngine (Rust puro)
-│   │   └── koreader/                       # KoreaderCrengineEngine (FFI C-ABI crengine)
-│   └── utils/
-│       ├── mod.rs
-│       ├── text.rs                         # Sanitização XML/XHTML5 e slugify_anchor_id
-│       └── regexes.rs                      # Expressões regulares DFA compiladas (OnceLock)
-└── tests/
-    ├── cli_command_test.rs                 # Testes dos comandos validate e view
-    ├── epub_pipeline_test.rs               # Testes do pipeline PDF, CMap e empacotamento EPUB 3.3
-    ├── epub_validation_test.rs             # Testes do validador estrutural W3C EPUB 3.3
-    ├── interactive_viewer_test.rs          # Testes do leitor interativo e alternância de motor
-    ├── markdown_extraction_test.rs         # Testes de extração Markdown e geração EPUB
-    ├── url_resolution_test.rs              # Testes de resolução RFC 3986 e SourceKind
-    ├── viewer_engine_test.rs               # Testes de renderização de bitmap e paginação
-    └── web_extraction_test.rs              # Testes de extração DOM (mdBook, MediaWiki, SinglePageSpec)
+| Perfil de Uso | Binário / Feature | Escopo Principal | Dependências de Sistema |
+| :--- | :--- | :--- | :--- |
+| **CLI (Padrão / Headless)** | `any2epub` (ou alias `pdf2epub`) sem features extras | Conversão em lote, pipeline CI/CD, validação W3C (`--json`), leitura rápida via TUI (`-i`) | Nenhuma dependência gráfica |
+| **GUI (Desktop Nativo)** | Compilado com `--features gui` | Janela gráfica `minifb` a 60 FPS para leitura visual de EPUBs (`--gui`) | Bibliotecas X11/Wayland no Linux (`libx11-dev`, `libxcursor-dev`, `libxrandr-dev`, `libxi-dev`) |
+
+---
+
+## Fontes Suportadas (`--source-kind`)
+
+Com `--source-kind auto` (padrão), o motor infere a fonte pelo caminho local ou padrão de URL. Para forçar um extrator específico, passe uma das opções abaixo:
+
+| Valor `--source-kind` | Fonte Alvo | Características Extraídas |
+| :--- | :--- | :--- |
+| `auto` | Detecção automática | `.md`/`.markdown` -> `markdown`; outros locais -> `pdf`; URLs mapeadas por padrão |
+| `pdf` | Livros e artigos em PDF | Reparo de CMap CID (`Calibri`, `Lekton`), figuras/capa (`pdfium-render`), capitulares e notas de rodapé |
+| `markdown` | Arquivo `.md` ou diretório recursivo | Ordenação natural, cabeçalhos `#`–`####`, blocos de código e callouts (`[!NOTE]`, `[!TIP]`, `[!WARNING]`) |
+| `web-docs` | Documentação linear (`mdBook` e similares) | Varredura BFS de sumário multinível, tabelas, blocos `<pre>` e diagramas |
+| `media-wiki` | Portais em grafo (`MediaWiki` / `ArchWiki`) | Travessia BFS configurável (`--max-depth`, `--max-chapters`) e tabelas `.wikitable` |
+| `mdn-guide` | Guias MDN (`Mozilla Yari`) | Navegação de barra lateral, listas de definição (`<dl>`/`<dt>`/`<dd>`) e callouts |
+| `ascii-doc-book` | Livros AsciiDoc (`Pro Git`) | Capítulos e seções `ol.book-toc`, blocos `admonitionblock` e exemplos |
+| `sphinx-docs` | Documentação `Sphinx` / ReadTheDocs | Árvores `toctree-l1`/`toctree-l2` e assinaturas de API |
+| `single-page-spec` | Especificações em página única (`Effective Go`) | Segmentação por `<h2>` em capítulos navegáveis |
+| `web-article` | Artigos Web avulsos | Extração limpa de artigo único |
+
+---
+
+## Instalação
+
+### 1. Binários Pré-Compilados (CLI Headless)
+Baixe o pacote correspondente nas [GitHub Releases](https://github.com/Arkmedess/any2epub/releases) (`x86_64-unknown-linux-gnu`, `aarch64-apple-darwin` ou `x86_64-pc-windows-msvc`) e verifique a integridade com `SHA256SUMS`. Os binários de release usam o perfil headless padrão (sem GUI).
+
+### 2. Compilação via Cargo
+
+```bash
+# CLI headless (recomendado para servidores, automação e uso em terminal)
+cargo build --release
+
+# CLI + Leitor Desktop GUI (requer pacotes de desenvolvimento X11/Wayland no Linux)
+cargo build --release --features gui
+```
+
+No Ubuntu/Debian, instale as dependências de janela antes de compilar com `--features gui`:
+
+```bash
+sudo apt-get install -y libx11-dev libxcursor-dev libxrandr-dev libxi-dev
+```
+
+### 3. Container Docker (CLI Headless Rootless)
+
+```bash
+docker build -t any2epub:local .
+docker run --rm -v "$PWD:/data" any2epub:local -i "/data/livro.pdf" -o "/data/livro.epub" --validate
 ```
 
 ---
 
-## Destaques da Versão `v0.10.0`
+## Uso da CLI (`any2epub`)
 
-### 1. Visualizador Multi-Engine (KOReader `crengine` & Rust Puro)
-Implementado sob o padrão Strategy (`ReaderEngine`), desacopla completamente a paginação da exibição:
-- **`NativeRustReaderEngine`**: Motor 100% nativo em Rust, com quebra de página por altura tipográfica e rasterização imediata de `PageBitmap` RGBA8888.
-- **`KoreaderCrengineEngine`**: Adaptador FFI C-ABI para a biblioteca `crengine` do KOReader, garantindo a mesma quebra de linha e hifenização do consagrado leitor de e-ink.
-- **Alternância Dinâmica em Tempo Real**: Pressione `M` a qualquer momento para alternar entre o motor KOReader e o motor Rust puro.
+A CLI segue separação POSIX de streams: relatórios finais e JSON (`--json`) vão para `stdout`; logs de progresso e diagnósticos vão para `stderr` (suprimíveis com `-q`/`--quiet`).
 
-### 2. Interface Desktop Nativa a 60 FPS & Terminal TUI
-- **Desktop Nativa (`--gui`)**: Janela gráfica renderizada via `minifb` operando a 60 quadros por segundo com baixo consumo de memória (~3 MB de framebuffer).
-- **Terminal Interativo (`-i`)**: Leitor com barra de progresso gráfica ASCII, tempo estimado restante de leitura, navegação fluida e atalhos rápidos.
-- **4 Temas Cromáticos Editoriais**: `PaperWhite` (diurno clássico), `Sepia` (fadiga visual reduzida), `Night` (modo escuro) e `EInkMono` (simulação de tela e-paper).
-
-### 3. Extrator de Markdown Local (`LocalMarkdownExtractor`)
-- Suporte nativo a arquivos únicos `.md` ou diretórios recursivos com ordenação natural de capítulos.
-- Extração de subtópicos profundos (`#` a `####`), blocos de código com destaque e caixas de aviso (`> [!NOTE]`, `> [!TIP]`, `> [!WARNING]`).
-
-### 4. Validador Estrutural Canônico W3C EPUB 3.3 (`NativeEpubValidator`)
-- Inspeciona o container OCF: arquivo `mimetype` descompactado (Stored) rigorosamente no offset de byte 0 e integridade do `container.xml`.
-- Valida conformidade Dublin Core no `content.opf`, integridade referencial exata entre `<manifest>` e `<spine>` e estrutura do `nav.xhtml`.
-- Subcomando dedicado `validate` com suporte a `--json` para automação em pipelines de CI/CD.
-
----
-
-## Controles e Atalhos do Visualizador
-
-### Janela Gráfica Desktop (`--gui`)
-| Tecla / Atalho | Ação Executada |
-| :--- | :--- |
-| **`Right` / `Down` / `PageDown` / `Space`** | Avançar para a próxima página |
-| **`Left` / `Up` / `PageUp`** | Voltar para a página anterior |
-| **`T`** | Ciclar temas cromáticos (*PaperWhite* -> *Sepia* -> *Night* -> *EInkMono*) |
-| **`M`** | Alternar motor de renderização (*Rust Nativo* <-> *KOReader crengine*) |
-| **`+` / `=`** | Aumentar tamanho da fonte tipográfica |
-| **`-`** | Diminuir tamanho da fonte tipográfica |
-| **`Q` / `Esc`** | Fechar a janela e encerrar o leitor |
-
-### Leitor Interativo no Terminal (`-i`)
-| Comando / Tecla | Ação Executada |
-| :--- | :--- |
-| **`Enter` / `n`** | Avançar página |
-| **`p`** | Página anterior |
-| **`m`** | Alternar motor (*native-rust* / *koreader-crengine*) |
-| **`t`** | Alternar tema visual |
-| **`g <número>`** | Pular diretamente para a página especificada |
-| **`q`** | Sair da sessão de leitura |
-
----
-
-## Como Compilar e Instalar
+### Conversão de Documentos
 
 ```bash
-# 1. Compilação padrão (modo headless de alta performance para servidores/CI)
-cargo build --release
+# PDF local para EPUB 3.3 com validação estrutural ao final
+any2epub -i "livro.pdf" -o "livro.epub" --validate
 
-# 2. Compilação com suporte à janela Desktop Nativa (requer bibliotecas X11/Wayland)
-cargo build --release --features gui
+# Diretório de Markdown local
+any2epub -i "docs/" -o "manual.epub" --validate
 
-# 3. Executar toda a suíte automatizada de testes (16 testes de integração)
+# Documentação Web com metadados explícitos
+any2epub \
+  -i "https://doc.rust-lang.org/book/" \
+  -o "rust-book.epub" \
+  --title "The Rust Programming Language" \
+  --lang "en" \
+  --validate
+
+# Portal MediaWiki limitando profundidade e capítulos do grafo
+any2epub \
+  -i "https://wiki.archlinux.org/title/Main_page" \
+  -o "archwiki.epub" \
+  --source-kind media-wiki \
+  --max-depth 2 \
+  --max-chapters 18
+```
+
+### Validação W3C EPUB 3.3
+
+Verifica `mimetype` não comprimido (`Stored`) no byte offset `0`, `META-INF/container.xml`, metadados Dublin Core em `content.opf`, integridade entre `<manifest>` e `<spine>` e estrutura do `nav.xhtml`.
+
+```bash
+# Saída legível no terminal
+any2epub validate "livro.epub"
+
+# Saída estruturada em JSON para pipelines de CI/CD
+any2epub validate "livro.epub" --json
+```
+
+### Leitura via Terminal (TUI)
+
+```bash
+# Sessão interativa no terminal
+any2epub view "livro.epub" -i
+
+# Renderizar uma página específica diretamente no terminal
+any2epub view "livro.epub" --theme sepia --page 0
+```
+
+Atalhos no modo TUI (`-i`): `Enter`/`n` (próxima página), `p` (anterior), `g <número>` (ir para página), `t` (ciclar tema), `m` (alternar motor), `q` (sair).
+
+---
+
+## Uso da GUI (Leitor Desktop — `--features gui`)
+
+Quando compilado com `--features gui`, o subcomando `view --gui` (ou a flag `-g`/`--gui` após uma conversão) abre uma janela desktop nativa via `minifb` com 4 temas (`paper-white`, `sepia`, `night`, `e-ink-mono`).
+
+```bash
+# Abrir EPUB existente na janela gráfica
+any2epub view "livro.epub" --gui --theme sepia
+
+# Converter PDF e abrir imediatamente na GUI
+any2epub -i "documento.pdf" -o "livro.epub" --gui
+```
+
+Atalhos na janela GUI:
+
+| Tecla | Ação |
+| :--- | :--- |
+| `Right` / `Down` / `PageDown` / `Space` | Próxima página |
+| `Left` / `Up` / `PageUp` | Página anterior |
+| `T` | Ciclar temas (`PaperWhite` -> `Sepia` -> `Night` -> `EInkMono`) |
+| `M` | Alternar backend (`native` <-> `koreader`) |
+| `+` / `=` e `-` | Aumentar / diminuir tamanho da fonte |
+| `Q` / `Esc` | Fechar janela |
+
+> **Nota sobre o backend `koreader`:** `KoreaderCrengineEngine` inspeciona e carrega `libcrengine` dinamicamente via FFI quando disponível no sistema para abertura, redimensionamento e contagem de páginas, mas a rasterização de `render_page` ainda delega para `NativeRustReaderEngine` (fonte bitmap 5x7 em buffer RGBA). A implementação de renderização nativa direta do `crengine` e suporte a fontes TrueType/OTF estão planejadas no [ROADMAP.md](ROADMAP.md).
+
+---
+
+## Arquitetura Modular
+
+O projeto organiza o fluxo em estágios desacoplados:
+
+| Módulo | Responsabilidade | Documentação |
+| :--- | :--- | :--- |
+| `src/cli/` | Parsing de argumentos (`clap`), inferência de metadados e orquestração de subcomandos | [src/cli/README.md](src/cli/README.md) |
+| `src/domain/` | Representação intermediária (`Chapter`, `ChapterElement`, `TocNode`) e trait `ContentSourceExtractor` | [src/domain/README.md](src/domain/README.md) |
+| `src/extractors/` | Extratores PDF (`lopdf`/`pdfium-render`), Markdown local, Web BFS, MediaWiki e Spec | [src/extractors/README.md](src/extractors/README.md) |
+| `src/epub/` | Empacotador OCF/EPUB 3.3 (`NativeEpub3Builder`) e validador (`NativeEpubValidator`) | [src/epub/README.md](src/epub/README.md) |
+| `src/viewer/` | Trait `ReaderEngine`, rasterizador nativo, ponte FFI `crengine`, TUI e janela `minifb` | [src/viewer/README.md](src/viewer/README.md) |
+| `docs/` | ADRs e diagramas C4 Mermaid do pipeline e visualizador | [ADR-0001](docs/adr/0001-motor-visualizador-koreader-e-desktop-minifb.md) · [Arquitetura Viewer](docs/architecture/visualizador_koreader_rust.md) |
+
+---
+
+## Referência de Extrações Validadas (EPUB 3.3)
+
+| Obra / Documentação | Motor / Fonte | Capítulos | Subtópicos (`H2`–`H4`) | Parágrafos (`<p>`) | Blocos `<pre>` | Tabelas / Callouts / Figuras | Tamanho |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| [Fundamentals of Software Architecture](https://www.oreilly.com/library/view/fundamentals-of-software/9781492043447/) | `pdf` (`lopdf` + CMap) | 31 | 323 | 2.191 | 32 | 200 figuras | 6,37 MB |
+| [Arch Linux Wiki](https://wiki.archlinux.org/title/Main_page) | `media-wiki` | 18 | 576 | 3.937 | 389 | 75 tbls / 267 notas / 18 figs | 3,45 MB |
+| [The Rust Programming Language](https://doc.rust-lang.org/book/) | `web-docs` (`mdBook`) | 27 | 370 | 3.468 | 318 | 73 tbls / 185 notas / 27 figs | 5,03 MB |
+| [MDN JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide) | `mdn-guide` (`Yari`) | 27 | 200 | 3.082 | 200 | 68 tbls / 200 notas / 27 figs | 4,95 MB |
+| [Pro Git (2nd Edition)](https://git-scm.com/book/en/v2) | `ascii-doc-book` | 13 | 164 | 2.499 | 164 | 41 tbls / 164 notas / 13 figs | 2,52 MB |
+| [Python Tutorial](https://docs.python.org/3/tutorial/index.html) | `sphinx-docs` | 16 | 152 | 2.328 | 152 | 41 tbls / 152 notas / 16 figs | 2,99 MB |
+| [Effective Go](https://go.dev/doc/effective_go) | `single-page-spec` | 16 | 128 | 2.120 | 156 | 34 tbls / 128 notas / 16 figs | 2,95 MB |
+
+---
+
+## Desenvolvimento e Verificação
+
+Comandos exigidos pelo CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)):
+
+```bash
+cargo fmt --all -- --check
+cargo clippy --all-targets --features gui -- -D warnings
 cargo test --features gui
 ```
 
----
-
-## Guia Rápido de Uso da CLI (`any2epub`)
-
-```bash
-# 1. Converter Markdown local para EPUB 3.3 com validação imediata
-./target/release/any2epub -i "docs/guia.md" -o "guia.epub" --validate
-
-# 2. Converter diretório de documentação Markdown para EPUB 3.3
-./target/release/any2epub -i "meu_projeto/docs/" -o "manual.epub" --validate
-
-# 3. Validar a conformidade estrutural W3C de qualquer arquivo EPUB
-./target/release/any2epub validate "meu_livro.epub"
-
-# 4. Validar e emitir relatório estruturado em JSON para CI/CD
-./target/release/any2epub validate "meu_livro.epub" --json
-
-# 5. Abrir a janela desktop nativa do visualizador estilo KOReader
-./target/release/any2epub view "meu_livro.epub" --gui
-
-# 6. Abrir o leitor interativo no terminal
-./target/release/any2epub view "meu_livro.epub" -i
-
-# 7. Renderizar página específica diretamente com motor e tema customizados
-./target/release/any2epub view "meu_livro.epub" --backend koreader --theme sepia --page 0
-./target/release/any2epub view "meu_livro.epub" --backend native --theme night --page 2
-
-# 8. Converter e abrir diretamente no visualizador desktop
-./target/release/any2epub -i "documento.pdf" -o "livro.epub" --gui
-```
-
----
-
-## Matriz de Validação dos 7 EPUBs 3.3 Gerados
-
-| Obra / Documentação | Motor / Fonte | Capítulos | Subtópicos (`H2`–`H4`) | Parágrafos (`<p>`) | Mín. `<p>` / Cap | Blocos `<pre>` | Tabelas / Callouts / Figuras | Tamanho Final |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **[Fundamentos da Arquitetura de Software](https://www.oreilly.com/library/view/fundamentals-of-software/9781492043447/)** | PDF (`lopdf` + CMap) | **31** | **323** | **2.191** | — | **32** | **200 Figuras** | **6,37 MB** |
-| **[Arch Linux Wiki System Handbook](https://wiki.archlinux.org/title/Main_page)** | `MediaWiki` (`media-wiki`) | **18** | **576** (até `1.1.1.1`) | **3.937** | **179** | **389** | **75 Tbls / 267 Notas / 18 Figs** | **3,45 MB** |
-| **[The Rust Programming Language (2024)](https://doc.rust-lang.org/book/)** | `mdBook` (`web-docs`) | **27** | **370** (até `4.1.5.1`) | **3.468** | **51** | **318** | **73 Tbls / 185 Notas / 27 Figs** | **5,03 MB** |
-| **[MDN JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide)** | `Mozilla Yari` (`mdn-guide`) | **27** | **200** (`H2`/`H3`/`H4`) | **3.082** | **63** | **200** | **68 Tbls / 200 Notas / 27 Figs** | **4,95 MB** |
-| **[Pro Git (2nd Edition — 89 Seções)](https://git-scm.com/book/en/v2)** | `AsciiDoc` (`ascii-doc-book`) | **13** | **164** (`1.1` a `A3.12`) | **2.499** | **123** | **164** | **41 Tbls / 164 Notas / 13 Figs** | **2,52 MB** |
-| **[The Python 3.15 Official Tutorial](https://docs.python.org/3/tutorial/index.html)** | `Sphinx` (`sphinx-docs`) | **16** | **152** (até `4.9.3.1`) | **2.328** | **63** | **152** | **41 Tbls / 152 Notas / 16 Figs** | **2,99 MB** |
-| **[Effective Go Specification](https://go.dev/doc/effective_go)** | `go.dev Spec` (`single-page-spec`) | **16** | **128** (`H2`/`H3`/`H4`) | **2.120** | **117** | **156** | **34 Tbls / 128 Notas / 16 Figs** | **2,95 MB** |
+Licença: `MIT OR Apache-2.0`.
