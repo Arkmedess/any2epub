@@ -1,49 +1,41 @@
-# Roadmap de Engenharia — any2epub
+# Roadmap — any2epub
 
-Planejamento técnico orientado a **conversão EPUB 3.3 para Kindle desbloqueado (KOReader)**, **CLI rica em diagnóstico**, **previewer desktop estilo KOReader** e **ecossistema `.koplugin`**.
+Plano de evolução do projeto com foco em **conversão de alta qualidade para Kindle desbloqueado (KOReader)**, **CLI rica em informações**, **leitor desktop estilo KOReader** e **integração direta com o aparelho**.
 
-> **Política de Versionamento (SemVer):** As milestones abaixo organizam **épicos de capacidade**, sem travar releases intermediárias. Correções retrocompatíveis (`fix:`) disparam versões **PATCH** (`0.11.x`) a qualquer momento; novas capacidades ou alterações pré-1.0 (`feat:`, `!`) disparam versões **MINOR** (`0.12.0+`); a **`v1.0.0`** marca o congelamento formal dos contratos públicos.
+> **Como funcionam as versões:** As etapas abaixo agrupam objetivos do produto, sem prender releases a datas ou números fixos. Correções simples geram versões `0.11.x`; recursos novos geram versões `0.12.0+`; a `v1.0.0` só sai quando os formatos, flags e APIs estiverem maduros e estáveis.
 
 ---
 
-## Visão Executiva e Marcos
+## Visão Geral das Etapas
 
-| Milestone | Foco Principal | Status | Referência |
+| Etapa | Foco Principal | Status | GitHub |
 | :--- | :--- | :--- | :--- |
-| **v0.9.0 – v0.11.0** | Pipeline modular, extração Web/PDF/Markdown, validador W3C e base do viewer | Concluído | [CHANGELOG.md](CHANGELOG.md) |
-| **[M1: Workspace CLI/GUI, Diagnóstico & Metadados](#m1-workspace-cligui-diagnóstico--metadados)** | Cargo Workspace (`core`, `cli`, `gui`), `any2epub info`, metadados OPF dinâmicos e releases duais | Em Andamento | [Milestone 1](https://github.com/Arkmedess/any2epub/milestone/1) |
-| **[M2: Motores Complexos & Perfis Kindle/E-Ink](#m2-motores-complexos--perfis-kindlee-ink)** | PDF multi-coluna/tabelas/CMap, novos formatos (DOCX, HTML, `.ipynb`, CBZ) e perfil e-ink 300 DPI | Planejado | [Milestone 2](https://github.com/Arkmedess/any2epub/milestone/2) |
-| **[M3: Ecossistema KOReader & Plugin (`.koplugin`)](#m3-ecossistema-koreader--plugin-koplugin)** | Fontes TrueType/OTF, renderização `libcrengine`, plugin Lua e servidor companion Wi-Fi | Planejado | [Milestone 3](https://github.com/Arkmedess/any2epub/milestone/3) |
-| **[M4: `v1.0.0` — Maturidade, Contratos & EPUBCheck](#m4-v100--maturidade-contratos--epubcheck)** | Congelamento de API pública `any2epub-core`, schema CLI v1, Golden Datasets e EPUBCheck no CI | Longo Prazo | [Milestone 4](https://github.com/Arkmedess/any2epub/milestone/4) |
+| **v0.9.0 – v0.11.0** | Base do projeto, extração de PDF/Web/Markdown, validador EPUB e início do visualizador | Concluído | [CHANGELOG.md](CHANGELOG.md) |
+| **[Etapa 1 — Separação CLI/GUI, Diagnóstico & Metadados](#etapa-1--separação-cligui-diagnóstico--metadados)** | Separar núcleo, CLI e GUI em pacotes próprios, criar comando de inspeção de EPUBs e corrigir metadados fixos | Em Andamento | [Milestone 1](https://github.com/Arkmedess/any2epub/milestone/1) |
+| **[Etapa 2 — Conversão Avançada & Otimização Kindle/KOReader](#etapa-2--conversão-avançada--otimização-kindlekoreader)** | PDFs complexos (duas colunas e tabelas), novos formatos (DOCX, HTML, `.ipynb`, CBZ) e imagens/CSS para tela e-ink | Planejado | [Milestone 2](https://github.com/Arkmedess/any2epub/milestone/2) |
+| **[Etapa 3 — Leitor Estilo KOReader & Plugin para Kindle](#etapa-3--leitor-estilo-koreader--plugin-para-kindle)** | Fontes TrueType no leitor desktop, desenho nativo via `libcrengine`, plugin Lua e envio via Wi-Fi | Planejado | [Milestone 3](https://github.com/Arkmedess/any2epub/milestone/3) |
+| **[Etapa 4 — Maturidade `v1.0.0`](#etapa-4--maturidade-v100)** | Estabilidade das APIs/flags, testes offline completos e checagem automática com o EPUBCheck oficial | Longo Prazo | [Milestone 4](https://github.com/Arkmedess/any2epub/milestone/4) |
 
 ---
 
-## Detalhamento das Milestones
+## O Que Será Feito em Cada Etapa
 
-### M1: Workspace CLI/GUI, Diagnóstico & Metadados
-**Objetivo:** Separar fisicamente núcleo, CLI headless e leitor desktop em Cargo Workspace, enriquecer a CLI com auditoria detalhada de EPUBs e corrigir metadados OPF.
+### Etapa 1 — Separação CLI/GUI, Diagnóstico & Metadados
+- **#1** — Separar o projeto em três pacotes dentro do mesmo repositório: núcleo compartilhado, CLI de terminal e leitor GUI desktop
+- **#2** — Corrigir versão dinâmica (`--version`), datas reais no `content.opf` e tag de capa apenas quando o livro tiver capa
+- **#8** — Criar o comando `any2epub info` para mostrar resumo completo do EPUB (capítulos, palavras, tempo de leitura, imagens, notas e avisos para KOReader)
+- **#3** — Publicar pacotes separados para CLI e GUI nas Releases e corrigir link da homepage no `Cargo.toml`
 
-- [ ] **#1** — `refactor(workspace): migrar projeto para Cargo Workspace (core, cli, gui)`
-- [ ] **#2** — `fix(cli,epub): corrigir versão dinâmica, datas OPF e meta cover condicional`
-- [ ] **#8** — `feat(cli): adicionar subcomando any2epub info para auditoria de EPUBs (Kindle/KOReader)`
-- [ ] **#3** — `ci(release): publicar artefatos separados para CLI headless e GUI desktop e alinhar homepage`
+### Etapa 2 — Conversão Avançada & Otimização Kindle/KOReader
+- **#9** — Melhorar conversão de PDFs difíceis: ordem certa em páginas de duas ou mais colunas, extração de tabelas e reparo ampliado de fontes sem mapa de caracteres
+- **#10** — Suportar novos formatos de entrada: Word (`.docx`), páginas HTML locais, Jupyter Notebooks (`.ipynb`) e quadrinhos/mangás (`.cbz`)
+- **#11** — Criar perfil de saída para Kindle/KOReader: redimensionamento e tons de cinza para tela e-ink (300 DPI) e CSS que não brigue com o modo noturno do aparelho
 
-### M2: Motores Complexos & Perfis Kindle/E-Ink
-**Objetivo:** Garantir eficácia em documentos difíceis (PDFs acadêmicos multi-coluna, tabelas, fontes CID variadas), ampliar formatos de entrada e otimizar saída para hardware Kindle/KOReader.
+### Etapa 3 — Leitor Estilo KOReader & Plugin para Kindle
+- **#4** — Adicionar fontes TrueType/OTF no leitor em Rust para leitura confortável com acentuação completa
+- **#5** — Conectar o desenho de página diretamente à `libcrengine` quando a biblioteca do KOReader estiver instalada no computador
+- **#12** — Criar plugin oficial em Lua (`any2epub.koplugin`) e modo servidor local (`any2epub serve`) para converter e baixar livros direto no Kindle via Wi-Fi
 
-- [ ] **#9** — `feat(pdf): motor geométrico avançado para multi-coluna, tabelas e CMap generalizado`
-- [ ] **#10** — `feat(extractors): ampliar formatos de entrada (DOCX, HTML local, Jupyter .ipynb e CBZ)`
-- [ ] **#11** — `feat(epub): perfil Kindle/KOReader com otimização e-ink de imagens e CSS adaptativo`
-
-### M3: Ecossistema KOReader & Plugin (`.koplugin`)
-**Objetivo:** Transformar `any2epub-gui` em previewer fiel ao KOReader e conectar diretamente o Kindle desbloqueado via plugin Lua + servidor companion na rede local.
-
-- [ ] **#4** — `feat(viewer): suportar fontes TrueType/OTF no NativeRustReaderEngine`
-- [ ] **#5** — `feat(viewer): implementar renderização RGBA direta via libcrengine em KoreaderCrengineEngine`
-- [ ] **#12** — `feat(koreader): criar plugin any2epub.koplugin (Lua) e modo companion/Wi-Fi para Kindle desbloqueado`
-
-### M4: `v1.0.0` — Maturidade, Contratos & EPUBCheck
-**Objetivo:** Alcançar maturidade de produção com estabilidade SemVer garantida e verificação cruzada contra o validador oficial W3C/EPUBCheck.
-
-- [ ] **#6** — `feat(core): estabilizar API pública de any2epub_rs, exit codes e schema JSON da CLI v1`
-- [ ] **#7** — `test(pipeline): consolidar suíte determinística de Golden Datasets sem dependência de rede`
+### Etapa 4 — Maturidade `v1.0.0`
+- **#6** — Estabilizar as funções públicas da biblioteca, os códigos de erro do terminal e o formato JSON da CLI
+- **#7** — Montar suíte de testes offline com livros de exemplo variados e validação cruzada usando o EPUBCheck oficial no CI
